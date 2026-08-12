@@ -96,8 +96,8 @@ Set `backend/.env` with your MongoDB Atlas URI:
 
 ```env
 PORT=5000
-MONGO_URI=mongodb+srv://mrsarthak825_db_user:zerWK9e37LxgSKaK@cluster0.t8snekz.mongodb.net/tiffin_db?retryWrites=true&w=majority
-JWT_SECRET=tiffin_super_secret_jwt_key_2026_safe
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.t8snekz.mongodb.net/tiffin_db?retryWrites=true&w=majority
+JWT_SECRET=your_jwt_secret_key_here
 JWT_EXPIRES_IN=30d
 CLIENT_URL=http://localhost:5173
 ```
