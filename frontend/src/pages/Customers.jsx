@@ -101,7 +101,6 @@ const Customers = () => {
     if (!cust) return '';
     const todayStr = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
     return (
-      `નમસ્તે ${cust.name} જી! 🙏\n\n` +
       `આ મહિનાનો (${todayStr}) ટિફિનનો હિસાબ:\n` +
       `🍱 ટિફિન પ્લાન: *${cust.defaultQuantity} નંગ (₹${cust.defaultPrice}/ટિફિન)*\n` +
       `📍 એરિયા: *${cust.area}*\n\n` +

@@ -55,12 +55,13 @@ const QuickEntry = () => {
           customerName: c.name,
           area: c.area || 'General',
           quantity: c.defaultQuantity || 1,
-          unitPrice: c.defaultPrice || 60,
-          totalAmount: (c.defaultQuantity || 1) * (c.defaultPrice || 60),
+          unitPrice: c.defaultLunchPrice || c.defaultPrice || 60,
+          totalAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
           status: 'delivered',
+          mealType: 'lunch',
           skipReason: '',
           paymentStatus: 'PAID',
-          paidAmount: (c.defaultQuantity || 1) * (c.defaultPrice || 60),
+          paidAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
           notes: '',
         }));
         setEntries(initialEntries);
@@ -99,6 +100,7 @@ const QuickEntry = () => {
           unitPrice: r.unitPrice || 60,
           totalAmount: (r.quantity || 1) * (r.unitPrice || 60),
           status: r.status || 'delivered',
+          mealType: r.mealType || 'lunch',
           skipReason: r.skipReason || '',
           paymentStatus: r.paymentStatus || 'PAID',
           paidAmount: r.status === 'skipped' ? 0 : (r.quantity || 1) * (r.unitPrice || 60),
@@ -129,6 +131,7 @@ const QuickEntry = () => {
         unitPrice: 60,
         totalAmount: 60,
         status: 'delivered',
+        mealType: 'lunch',
         skipReason: '',
         paymentStatus: 'PAID',
         paidAmount: 60,
@@ -144,12 +147,13 @@ const QuickEntry = () => {
       customerName: customer.name,
       area: customer.area || 'General',
       quantity: customer.defaultQuantity || 1,
-      unitPrice: customer.defaultPrice || 60,
-      totalAmount: (customer.defaultQuantity || 1) * (customer.defaultPrice || 60),
+      unitPrice: customer.defaultLunchPrice || customer.defaultPrice || 60,
+      totalAmount: (customer.defaultQuantity || 1) * (customer.defaultLunchPrice || customer.defaultPrice || 60),
       status: 'delivered',
+      mealType: 'lunch',
       skipReason: '',
       paymentStatus: 'PAID',
-      paidAmount: (customer.defaultQuantity || 1) * (customer.defaultPrice || 60),
+      paidAmount: (customer.defaultQuantity || 1) * (customer.defaultLunchPrice || customer.defaultPrice || 60),
       notes: '',
     };
 
@@ -169,6 +173,21 @@ const QuickEntry = () => {
   const handleUpdateEntry = (index, field, value) => {
     const updated = [...entries];
     const item = { ...updated[index], [field]: value };
+
+    // When mealType changes (lunch -> ₹60, dinner -> ₹80)
+    if (field === 'mealType') {
+      if (value === 'dinner') {
+        item.unitPrice = 80;
+      } else if (value === 'lunch') {
+        item.unitPrice = 60;
+      } else if (value === 'both') {
+        item.unitPrice = 140;
+      }
+      item.totalAmount = item.status === 'skipped' ? 0 : item.quantity * item.unitPrice;
+      if (item.paymentStatus === 'PAID') {
+        item.paidAmount = item.totalAmount;
+      }
+    }
 
     // Automatic calculation of amounts and status rules
     if (field === 'status') {
@@ -391,10 +410,10 @@ const QuickEntry = () => {
                   : 'border-rose-200'
               }`}
             >
-              {/* Row 1: Name + Remove */}
+              {/* Row 1: Name + Status + Remove */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
                   <input
@@ -406,7 +425,7 @@ const QuickEntry = () => {
                   />
                 </div>
 
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1 shrink-0">
                   {/* Status Toggle Button */}
                   <select
                     value={entry.status}
@@ -430,9 +449,22 @@ const QuickEntry = () => {
                 </div>
               </div>
 
-              {/* Row 2: Controls if delivered */}
+              {/* Row 2: Meal Type + Quantity + Price + Payment Status */}
               {entry.status === 'delivered' ? (
                 <div className="grid grid-cols-4 gap-2 items-center pt-1 border-t border-slate-100 text-xs">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 block">{t('mealType')}</label>
+                    <select
+                      value={entry.mealType || 'lunch'}
+                      onChange={(e) => handleUpdateEntry(index, 'mealType', e.target.value)}
+                      className="w-full font-bold text-slate-800 bg-orange-50/60 border border-orange-200 rounded-lg py-1 px-1 text-[11px] focus:outline-none"
+                    >
+                      <option value="lunch">{t('lunch')}</option>
+                      <option value="dinner">{t('dinner')}</option>
+                      <option value="both">{t('both')}</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="text-[10px] font-bold text-slate-400 block">{t('quantity')}</label>
                     <input
@@ -440,24 +472,19 @@ const QuickEntry = () => {
                       min="1"
                       value={entry.quantity}
                       onChange={(e) => handleUpdateEntry(index, 'quantity', e.target.value)}
-                      className="w-full font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 text-center"
+                      className="w-full font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg py-1 px-1.5 text-center"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold text-slate-400 block">{t('price')}</label>
+                    <label className="text-[10px] font-bold text-slate-400 block">{t('price')} (₹)</label>
                     <input
                       type="number"
                       min="0"
                       value={entry.unitPrice}
                       onChange={(e) => handleUpdateEntry(index, 'unitPrice', e.target.value)}
-                      className="w-full font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 text-center"
+                      className="w-full font-bold text-slate-900 bg-amber-50 border border-amber-300 rounded-lg py-1 px-1.5 text-center"
                     />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 block">{t('amount')}</label>
-                    <span className="font-bold text-orange-600 block py-1">₹{entry.totalAmount}</span>
                   </div>
 
                   <div>
@@ -519,7 +546,7 @@ const QuickEntry = () => {
                 >
                   <div>
                     <p className="font-bold text-sm text-slate-900">{cust.name}</p>
-                    <p className="text-xs text-slate-500">{cust.area} • Default ₹{cust.defaultPrice}</p>
+                    <p className="text-xs text-slate-500">{cust.area} • Lunch ₹{cust.defaultLunchPrice || 60} | Dinner ₹{cust.defaultDinnerPrice || 80}</p>
                   </div>
                   <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-lg">
                     Select

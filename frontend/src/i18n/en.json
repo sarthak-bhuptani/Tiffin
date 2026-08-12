@@ -111,5 +111,9 @@
   "scanNotebook": "Scan Notebook Photo",
   "uploadNotebookPhoto": "Upload Notebook Image",
   "analyzingImage": "Analyzing notebook handwriting...",
-  "ocrSuccess": "Notebook entries extracted successfully!"
+  "ocrSuccess": "Notebook entries extracted successfully!",
+  "mealType": "Meal Type",
+  "lunch": "☀️ Lunch",
+  "dinner": "🌙 Dinner",
+  "both": "🍱 Both"
 }

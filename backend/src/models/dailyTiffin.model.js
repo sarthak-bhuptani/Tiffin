@@ -45,6 +45,11 @@ const dailyTiffinSchema = new mongoose.Schema(
       enum: ['delivered', 'skipped', 'cancelled'],
       default: 'delivered',
     },
+    mealType: {
+      type: String,
+      enum: ['lunch', 'dinner', 'both'],
+      default: 'lunch',
+    },
     skipReason: {
       type: String,
       trim: true,

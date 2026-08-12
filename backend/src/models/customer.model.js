@@ -32,6 +32,16 @@ const customerSchema = new mongoose.Schema(
       default: 60,
       min: [0, 'Default price cannot be negative'],
     },
+    defaultLunchPrice: {
+      type: Number,
+      default: 60,
+      min: [0, 'Default price cannot be negative'],
+    },
+    defaultDinnerPrice: {
+      type: Number,
+      default: 80,
+      min: [0, 'Default price cannot be negative'],
+    },
     planType: {
       type: String,
       enum: ['daily', 'monthly'],
