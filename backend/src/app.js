@@ -23,7 +23,16 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health Check
+// Health Check & Root Welcome
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Tiffin Business Manager API Server is live',
+    documentation: '/api-docs',
+    health: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'Tiffin API is healthy and running' });
 });
