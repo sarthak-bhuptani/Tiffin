@@ -19,16 +19,49 @@ const parseNotebookContent = async ({ text, base64Image }) => {
       'Suresh Shah 1 60 Sector 6',
       'Priya Mehta 1 60',
       'Jayesh skipped',
+      'Vegetables 150',
+      'Gas Cylinder 500',
+      'Grocery items 200',
     ];
   }
 
   const parsedEntries = [];
+  const parsedExpenses = [];
 
   for (const line of rawLines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    // Detect status
+    // Detect expense line items
+    const isExpense = /vegetable|veg|grocery|gas|packaging|delivery|electricity|rent|expense|expenses|શાક|શાકભાજી|કરિયાણું|કરિયાણા|ગેસ|દૂધ|તેલ|પગાર|ખર્ચ|ભાડું|ડિલિવરી|લાઈટ/i.test(trimmed);
+
+    if (isExpense) {
+      const numbers = trimmed.match(/\d+/g) || [];
+      const amount = numbers.length > 0 ? parseInt(numbers[numbers.length - 1], 10) : 0;
+
+      let category = 'other';
+      if (/vegetable|veg|શાક/i.test(trimmed)) category = 'vegetables';
+      else if (/grocery|કરિયાણું|કરિયાણા/i.test(trimmed)) category = 'grocery';
+      else if (/gas|ગેસ/i.test(trimmed)) category = 'gas';
+      else if (/packaging|packet|પેકિંગ/i.test(trimmed)) category = 'packaging';
+      else if (/delivery|ડિલિવરી/i.test(trimmed)) category = 'delivery';
+      else if (/rent|ભાડું|ભાડુ/i.test(trimmed)) category = 'rent';
+      else if (/electricity|લાઈટ/i.test(trimmed)) category = 'electricity';
+
+      const cleanNote = trimmed
+        .replace(/\d+/g, '')
+        .replace(/vegetables?|veg|grocery|gas|packaging|delivery|electricity|rent|expenses?|શાક|શાકભાજી|કરિયાણું|કરિયાણા|ગેસ|દૂધ|તેલ|પગાર|ખર્ચ|ભાડું|ડિલિવરી|લાઈટ/gi, '')
+        .trim();
+
+      parsedExpenses.push({
+        category,
+        amount,
+        note: cleanNote || trimmed,
+      });
+      continue;
+    }
+
+    // Detect tiffin status
     let status = 'delivered';
     if (/skipped|skip|બંધ|ના|કેન્સલ|cancel/i.test(trimmed)) {
       status = 'skipped';
@@ -68,18 +101,37 @@ const parseNotebookContent = async ({ text, base64Image }) => {
       c.name.toLowerCase().includes(namePart.toLowerCase()) || namePart.toLowerCase().includes(c.name.toLowerCase())
     );
 
+    const totalAmt = status === 'skipped' ? 0 : quantity * unitPrice;
+
     parsedEntries.push({
       customerId: matchedCustomer ? matchedCustomer._id : null,
       customerName: matchedCustomer ? matchedCustomer.name : namePart,
-      area: matchedCustomer ? matchedCustomer.area : 'Sector 6',
+      area: matchedCustomer ? matchedCustomer.area : 'General',
       quantity,
-      unitPrice: matchedCustomer ? matchedCustomer.defaultPrice : unitPrice,
+      unitPrice: matchedCustomer ? (matchedCustomer.defaultPrice || unitPrice) : unitPrice,
+      totalAmount: totalAmt,
       status,
       paymentStatus: 'PAID',
     });
   }
 
-  return parsedEntries;
+  // Calculate totals
+  const totalIncome = parsedEntries.reduce(
+    (sum, e) => sum + (e.status === 'delivered' ? (e.totalAmount !== undefined ? e.totalAmount : e.quantity * e.unitPrice) : 0),
+    0
+  );
+  const totalExpenses = parsedExpenses.reduce((sum, ex) => sum + ex.amount, 0);
+  const netProfit = totalIncome - totalExpenses;
+
+  return {
+    entries: parsedEntries,
+    expenses: parsedExpenses,
+    summary: {
+      totalIncome,
+      totalExpenses,
+      netProfit,
+    },
+  };
 };
 
 module.exports = {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Ensure base URL points to live Vercel backend or fallback
-const rawBaseURL = import.meta.env.VITE_API_BASE_URL || 'https://tiffin-indol.vercel.app/api';
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '/api' : 'https://tiffin-indol.vercel.app/api');
 const baseURL = rawBaseURL.endsWith('/') ? rawBaseURL : `${rawBaseURL}/`;
 
 const API = axios.create({

@@ -26,6 +26,7 @@ const bulkTiffinSchema = z.object({
     date: z.string().min(1, 'Date is required'),
     entries: z.array(
       z.object({
+        _id: z.string().optional(),
         customerId: z.string().nullable().optional(),
         customerName: z.string().min(1, 'Customer name is required'),
         area: z.string().optional().default('General'),
@@ -39,7 +40,8 @@ const bulkTiffinSchema = z.object({
         paidAmount: z.number().min(0).optional().default(0),
         notes: z.string().optional(),
       })
-    ).min(1, 'At least one tiffin entry is required'),
+    ).default([]),
+    deletedIds: z.array(z.string()).optional().default([]),
   }),
   query: z.object({}).passthrough(),
   params: z.object({}).passthrough(),

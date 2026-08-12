@@ -13,8 +13,8 @@ const createSingleTiffin = async (req, res, next) => {
 
 const createBulkTiffins = async (req, res, next) => {
   try {
-    const { date, entries } = req.body;
-    const result = await tiffinService.createBulkTiffins(date, entries);
+    const { date, entries, deletedIds } = req.body;
+    const result = await tiffinService.createBulkTiffins(date, entries, deletedIds);
     return sendSuccess(res, 201, 'Bulk daily tiffins saved successfully', result);
   } catch (error) {
     next(error);

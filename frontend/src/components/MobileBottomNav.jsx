@@ -25,7 +25,7 @@ const MobileBottomNav = () => {
               to={item.to}
               end={item.to === '/'}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center py-1 px-2 min-w-[64px] rounded-xl transition ${
+                `flex flex-col items-center justify-center py-1 px-1 flex-1 min-w-0 rounded-xl transition ${
                   isActive ? 'text-orange-600 bg-orange-50 font-bold' : 'text-slate-500 hover:text-slate-800'
                 }`
               }

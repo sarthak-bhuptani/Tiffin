@@ -37,6 +37,7 @@ const createSingleTiffin = async (data) => {
     unitPrice: data.unitPrice,
     totalAmount,
     status: data.status || 'delivered',
+    mealType: data.mealType || 'lunch',
     skipReason: data.skipReason || '',
     paymentStatus: data.paymentStatus || 'PENDING',
     paidAmount,
@@ -46,8 +47,14 @@ const createSingleTiffin = async (data) => {
   return tiffin;
 };
 
-const createBulkTiffins = async (date, entries) => {
+const createBulkTiffins = async (date, entries, deletedIds = []) => {
+  // 1. Delete entries in deletedIds
+  if (deletedIds && deletedIds.length > 0) {
+    await DailyTiffin.deleteMany({ _id: { $in: deletedIds } });
+  }
+
   const tiffinsToCreate = [];
+  const updatedTiffins = [];
 
   for (const entry of entries) {
     const totalAmount = entry.status === 'skipped' ? 0 : (entry.totalAmount !== undefined ? entry.totalAmount : (entry.quantity || 1) * (entry.unitPrice || 0));
@@ -58,7 +65,7 @@ const createBulkTiffins = async (date, entries) => {
       paidAmount = entry.paidAmount || 0;
     }
 
-    tiffinsToCreate.push({
+    const tiffinData = {
       date,
       customerId: entry.customerId || null,
       customerName: entry.customerName,
@@ -67,21 +74,40 @@ const createBulkTiffins = async (date, entries) => {
       unitPrice: entry.unitPrice,
       totalAmount,
       status: entry.status || 'delivered',
+      mealType: entry.mealType || 'lunch',
       skipReason: entry.skipReason || '',
       paymentStatus: entry.paymentStatus || 'PENDING',
       paidAmount,
       notes: entry.notes || '',
-    });
+    };
+
+    if (entry._id) {
+      const updated = await DailyTiffin.findByIdAndUpdate(entry._id, tiffinData, {
+        new: true,
+        runValidators: true,
+      });
+      if (updated) {
+        updatedTiffins.push(updated);
+      }
+    } else {
+      tiffinsToCreate.push(tiffinData);
+    }
   }
 
-  const createdTiffins = await DailyTiffin.insertMany(tiffinsToCreate);
+  // 2. Insert new entries
+  let createdTiffins = [];
+  if (tiffinsToCreate.length > 0) {
+    createdTiffins = await DailyTiffin.insertMany(tiffinsToCreate);
+  }
+
+  const currentTiffins = [...updatedTiffins, ...createdTiffins];
 
   // Compute bulk summary
   let totalTiffins = 0;
   let totalIncome = 0;
   let paidAmountSum = 0;
 
-  createdTiffins.forEach((t) => {
+  currentTiffins.forEach((t) => {
     if (t.status === 'delivered') {
       totalTiffins += t.quantity;
       totalIncome += t.totalAmount;
@@ -93,14 +119,14 @@ const createBulkTiffins = async (date, entries) => {
 
   return {
     date,
-    count: createdTiffins.length,
+    count: currentTiffins.length,
     summary: {
       totalTiffins,
       totalIncome,
       paidAmount: paidAmountSum,
       pendingAmount: pendingAmountSum,
     },
-    entries: createdTiffins,
+    entries: currentTiffins,
   };
 };
 

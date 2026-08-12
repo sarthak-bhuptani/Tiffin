@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomers } from '../services/customerService';
-import { createBulkTiffins, parseNotebookImage, getTiffins } from '../services/tiffinService';
+import { createBulkTiffins, parseNotebookImage, getTiffins, deleteTiffin } from '../services/tiffinService';
+import { createExpense } from '../services/expenseService';
 import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 
 import {
@@ -36,6 +38,8 @@ const QuickEntry = () => {
   // Active entries array acting like a physical notebook sheet
   const [entries, setEntries] = useState([]);
   const [activeEntryIndex, setActiveEntryIndex] = useState(null);
+  const [deletedIds, setDeletedIds] = useState([]);
+  const [entryToDeleteIndex, setEntryToDeleteIndex] = useState(null);
 
   const [loadingDate, setLoadingDate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -65,6 +69,7 @@ const QuickEntry = () => {
   const loadDateData = async (selectedDate) => {
     try {
       setLoadingDate(true);
+      setDeletedIds([]);
       const savedTiffins = await getTiffins({ date: selectedDate });
 
       if (savedTiffins && savedTiffins.length > 0) {
@@ -129,13 +134,16 @@ const QuickEntry = () => {
     reader.readAsDataURL(file);
   };
 
-  // Analyze notebook image & autofill Quick Entry rows
+  // Analyze notebook image & autofill Quick Entry rows and Expenses
   const handleAnalyzeImage = async () => {
     if (!selectedImage) return;
 
     try {
       setAnalyzing(true);
-      const parsedRows = await parseNotebookImage({ base64Image: selectedImage });
+      const resData = await parseNotebookImage({ base64Image: selectedImage });
+      const parsedRows = resData?.entries || (Array.isArray(resData) ? resData : []);
+      const parsedExpenses = resData?.expenses || [];
+      const summary = resData?.summary;
 
       if (parsedRows && parsedRows.length > 0) {
         const newEntries = parsedRows.map((r) => ({
@@ -144,23 +152,53 @@ const QuickEntry = () => {
           area: r.area || 'General',
           quantity: r.quantity || 1,
           unitPrice: r.unitPrice || 60,
-          totalAmount: (r.quantity || 1) * (r.unitPrice || 60),
+          totalAmount: r.status === 'skipped' ? 0 : (r.totalAmount !== undefined ? r.totalAmount : (r.quantity || 1) * (r.unitPrice || 60)),
           status: r.status || 'delivered',
           mealType: r.mealType || 'lunch',
           skipReason: r.skipReason || '',
           paymentStatus: r.paymentStatus || 'PAID',
-          paidAmount: r.status === 'skipped' ? 0 : (r.quantity || 1) * (r.unitPrice || 60),
+          paidAmount: r.status === 'skipped' ? 0 : (r.totalAmount !== undefined ? r.totalAmount : (r.quantity || 1) * (r.unitPrice || 60)),
           notes: 'Extracted from Notebook Scan',
         }));
+
+        // Automatically save parsed expenses if present
+        if (parsedExpenses && parsedExpenses.length > 0) {
+          for (const ex of parsedExpenses) {
+            try {
+              await createExpense({
+                date,
+                category: ex.category,
+                amount: ex.amount,
+                note: ex.note,
+              });
+            } catch (e) {
+              console.error('Error saving extracted expense:', e);
+            }
+          }
+        }
+
+        // Track overridden entries for deletion
+        const overwrittenIds = entries
+          .filter((e) => e._id)
+          .map((e) => e._id);
+        if (overwrittenIds.length > 0) {
+          setDeletedIds((prev) => [...prev, ...overwrittenIds]);
+        }
 
         setEntries(newEntries);
         setIsScanModalOpen(false);
         setSelectedImage(null);
-        setToastMessage(t('ocrSuccess'));
+
+        const summaryText = summary
+          ? `આવક: ₹${summary.totalIncome} | ખર્ચ: ₹${summary.totalExpenses} | નફો: ₹${summary.netProfit}`
+          : t('ocrSuccess');
+
+        setToastMessage(`📸 ${t('ocrSuccess')} (${summaryText})`);
       }
     } catch (err) {
       alert(err.response?.data?.message || t('errorOccurred'));
     } finally {
+      setSubmitting(false);
       setAnalyzing(false);
     }
   };
@@ -271,8 +309,20 @@ const QuickEntry = () => {
     setEntries(updated);
   };
 
-  const handleRemoveEntry = (index) => {
+  const handleConfirmRemoveEntry = async () => {
+    if (entryToDeleteIndex === null) return;
+    const index = entryToDeleteIndex;
+    const entryToRemove = entries[index];
+    if (entryToRemove && entryToRemove._id) {
+      setDeletedIds((prev) => [...prev, entryToRemove._id]);
+      try {
+        await deleteTiffin(entryToRemove._id);
+      } catch (err) {
+        console.error('Error deleting entry:', err);
+      }
+    }
     setEntries((prev) => prev.filter((_, i) => i !== index));
+    setEntryToDeleteIndex(null);
   };
 
   // Compute live notebook totals
@@ -291,15 +341,14 @@ const QuickEntry = () => {
   const pendingAmount = Math.max(0, liveTotals.totalIncome - liveTotals.paidAmount);
 
   const handleSaveDay = async () => {
-    if (entries.length === 0) return;
+    if (entries.length === 0 && deletedIds.length === 0) return;
 
     // Filter valid entries
     const validEntries = entries.filter((e) => e.customerName.trim().length > 0);
-    if (validEntries.length === 0) return;
 
     try {
       setSubmitting(true);
-      await createBulkTiffins(date, validEntries);
+      await createBulkTiffins(date, validEntries, deletedIds);
       setToastMessage(t('bulkSavedSuccess'));
       setTimeout(() => navigate('/tiffins/list'), 1000);
     } catch (err) {
@@ -316,11 +365,11 @@ const QuickEntry = () => {
   );
 
   return (
-    <div className="pb-36 pt-4 px-4 max-w-4xl mx-auto space-y-4">
+    <div className="pb-44 pt-3 px-3 sm:px-4 max-w-4xl mx-auto space-y-3.5">
       <Toast message={toastMessage} onClose={() => setToastMessage('')} />
 
       {/* Header */}
-      <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-orange-100 shadow-xs">
+      <div className="flex items-center justify-between bg-white rounded-2xl p-3 sm:p-4 border border-orange-100 shadow-xs">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
             <BookOpen className="w-5 h-5" />
@@ -344,13 +393,13 @@ const QuickEntry = () => {
       </div>
 
       {/* Action Bar with Notebook Photo Scan Button */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="grid grid-cols-2 sm:flex items-center justify-between gap-2">
         <button
           onClick={() => setIsScanModalOpen(true)}
-          className="flex-1 flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition active:scale-98"
+          className="col-span-2 sm:col-span-1 sm:flex-1 flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition active:scale-98"
         >
-          <Camera className="w-4 h-4" />
-          <span>📸 {t('scanNotebook')}</span>
+          <Camera className="w-4 h-4 shrink-0" />
+          <span className="truncate">📸 {t('scanNotebook')}</span>
         </button>
 
         <button
@@ -358,18 +407,18 @@ const QuickEntry = () => {
             setActiveEntryIndex(entries.length);
             setIsSearchOpen(true);
           }}
-          className="px-3 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs border border-orange-200 transition flex items-center space-x-1"
+          className="flex-1 flex items-center justify-center space-x-1 px-2.5 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs border border-orange-200 transition"
         >
-          <Search className="w-3.5 h-3.5" />
-          <span>{t('searchCustomer')}</span>
+          <Search className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{t('searchCustomer')}</span>
         </button>
 
         <button
           onClick={handleAddBlankRow}
-          className="px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition flex items-center space-x-1"
+          className="flex-1 flex items-center justify-center space-x-1 px-2.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition"
         >
-          <Plus className="w-3.5 h-3.5" />
-          <span>+ {t('addEntry')}</span>
+          <Plus className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">+ {t('addEntry')}</span>
         </button>
       </div>
 
@@ -490,7 +539,7 @@ const QuickEntry = () => {
                   </select>
 
                   <button
-                    onClick={() => handleRemoveEntry(index)}
+                    onClick={() => setEntryToDeleteIndex(index)}
                     className="p-1 text-slate-400 hover:text-rose-600 transition"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -500,7 +549,7 @@ const QuickEntry = () => {
 
               {/* Row 2: Meal Type + Quantity + Price + Payment Status */}
               {entry.status === 'delivered' ? (
-                <div className="grid grid-cols-4 gap-2 items-center pt-1 border-t border-slate-100 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-center pt-2 border-t border-slate-100 text-xs">
                   <div>
                     <label className="text-[10px] font-bold text-slate-400 block">{t('mealType')}</label>
                     <select
@@ -607,36 +656,49 @@ const QuickEntry = () => {
         </div>
       </Modal>
 
+      {/* Delete Confirmation Popup */}
+      <ConfirmModal
+        isOpen={entryToDeleteIndex !== null}
+        onClose={() => setEntryToDeleteIndex(null)}
+        onConfirm={handleConfirmRemoveEntry}
+        title="એન્ટ્રી ડીલીટ કરો (Delete Entry)"
+        message={
+          entryToDeleteIndex !== null && entries[entryToDeleteIndex]
+            ? `શું તમે ચોક્કસ એન્ટ્રી "${entries[entryToDeleteIndex].customerName || 'અજ્ઞાત'}" ને ડીલીટ કરવા માંગો છો?`
+            : 'શું તમે આ એન્ટ્રી ડીલીટ કરવા માંગો છો?'
+        }
+      />
+
       {/* Sticky Bottom Notebook Summary & Save Bar */}
-      <div className="fixed bottom-14 left-0 right-0 z-30 bg-slate-900 text-white p-3 shadow-2xl max-w-4xl mx-auto rounded-t-2xl border-t border-slate-800">
-        <div className="flex items-center justify-between mb-2 px-1 text-xs">
+      <div className="fixed bottom-[56px] left-0 right-0 z-30 bg-slate-900 text-white p-3 shadow-2xl max-w-4xl mx-auto rounded-t-2xl border-t border-slate-800">
+        <div className="grid grid-cols-4 gap-1 items-center justify-between mb-2.5 px-0.5 text-center text-[10px] sm:text-xs">
           <div>
-            <span className="text-slate-400">{t('tiffins')}: </span>
-            <span className="font-bold text-white text-sm">{liveTotals.totalTiffins}</span>
+            <span className="text-slate-400 block">{t('tiffins')}</span>
+            <span className="font-bold text-white text-xs sm:text-sm">{liveTotals.totalTiffins}</span>
           </div>
 
           <div>
-            <span className="text-slate-400">{t('income')}: </span>
-            <span className="font-bold text-emerald-400 text-sm">₹{liveTotals.totalIncome}</span>
+            <span className="text-slate-400 block">{t('income')}</span>
+            <span className="font-bold text-emerald-400 text-xs sm:text-sm">₹{liveTotals.totalIncome}</span>
           </div>
 
           <div>
-            <span className="text-slate-400">{t('paid')}: </span>
-            <span className="font-bold text-emerald-300">₹{liveTotals.paidAmount}</span>
+            <span className="text-slate-400 block">{t('paid')}</span>
+            <span className="font-bold text-emerald-300 text-xs sm:text-sm">₹{liveTotals.paidAmount}</span>
           </div>
 
           <div>
-            <span className="text-slate-400">{t('pending')}: </span>
-            <span className="font-bold text-rose-400">₹{pendingAmount}</span>
+            <span className="text-slate-400 block">{t('pending')}</span>
+            <span className="font-bold text-rose-400 text-xs sm:text-sm">₹{pendingAmount}</span>
           </div>
         </div>
 
         <button
           onClick={handleSaveDay}
-          disabled={submitting || entries.length === 0}
-          className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold rounded-xl shadow-lg shadow-orange-600/30 flex items-center justify-center space-x-2 transition disabled:opacity-50"
+          disabled={submitting || (entries.length === 0 && deletedIds.length === 0)}
+          className="w-full py-2.5 sm:py-3 px-4 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-orange-600/30 flex items-center justify-center space-x-2 transition disabled:opacity-50"
         >
-          <Save className="w-5 h-5" />
+          <Save className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>{submitting ? t('loading') : t('saveDay')}</span>
         </button>
       </div>

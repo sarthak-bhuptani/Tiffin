@@ -10,8 +10,8 @@ export const createSingleTiffin = async (data) => {
   return res.data.data.tiffin;
 };
 
-export const createBulkTiffins = async (date, entries) => {
-  const res = await API.post('/tiffins/bulk', { date, entries });
+export const createBulkTiffins = async (date, entries, deletedIds = []) => {
+  const res = await API.post('/tiffins/bulk', { date, entries, deletedIds });
   return res.data.data;
 };
 
