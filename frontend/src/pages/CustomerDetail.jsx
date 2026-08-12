@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { getCustomerById } from '../services/customerService';
+import { getCustomerById, deleteCustomer } from '../services/customerService';
 import { recordPayment } from '../services/paymentService';
 import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
+import Toast from '../components/Toast';
 
 import {
   ArrowLeft,
-  User,
   Phone,
   MapPin,
-  Utensils,
-  CheckCircle2,
-  AlertCircle,
   Plus,
-  Calendar,
-  Wallet,
+  Trash2,
 } from 'lucide-react';
 
 const CustomerDetail = () => {
@@ -25,6 +22,7 @@ const CustomerDetail = () => {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState('');
 
   // Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -35,6 +33,9 @@ const CustomerDetail = () => {
     paymentDate: new Date().toISOString().split('T')[0],
   });
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+
+  // Delete Confirmation Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const fetchCustomerDetails = async () => {
     try {
@@ -74,11 +75,22 @@ const CustomerDetail = () => {
       });
 
       setIsPaymentModalOpen(false);
+      setToastMessage('✅ પેમેન્ટ સફળતાપૂર્વક જમા થયું!');
       fetchCustomerDetails();
     } catch (err) {
       alert(err.response?.data?.message || t('errorOccurred'));
     } finally {
       setPaymentSubmitting(false);
+    }
+  };
+
+  const handleDeleteCustomerConfirm = async () => {
+    try {
+      await deleteCustomer(id);
+      setToastMessage('✅ ગ્રાહક સફળતાપૂર્વક ડીલીટ થયો!');
+      setTimeout(() => navigate('/customers'), 1000);
+    } catch (err) {
+      alert(err.response?.data?.message || t('errorOccurred'));
     }
   };
 
@@ -90,18 +102,30 @@ const CustomerDetail = () => {
     return <div className="py-24 text-center text-slate-400 text-sm font-medium">{t('noCustomers')}</div>;
   }
 
-  const { customer, stats, tiffins, payments } = data;
+  const { customer, stats, tiffins } = data;
 
   return (
     <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4">
-      {/* Top Navigation */}
-      <button
-        onClick={() => navigate('/customers')}
-        className="flex items-center space-x-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Back to Customers</span>
-      </button>
+      <Toast message={toastMessage} onClose={() => setToastMessage('')} />
+
+      {/* Top Navigation Bar */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate('/customers')}
+          className="flex items-center space-x-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>પાછા જાઓ (Back to Customers)</span>
+        </button>
+
+        <button
+          onClick={() => setIsDeleteModalOpen(true)}
+          className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition active:scale-95"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>ડીલીટ કરો (Delete Customer)</span>
+        </button>
+      </div>
 
       {/* Customer Header Card */}
       <div className="bg-white rounded-3xl p-5 border border-orange-100 shadow-sm space-y-3">
@@ -210,6 +234,15 @@ const CustomerDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Popup */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteCustomerConfirm}
+        title="ગ્રાહક ડીલીટ કરો (Delete Customer)"
+        message={`શું તમે ચોક્કસ ગ્રાહક "${customer.name}" ને કાયમ માટે ડીલીટ કરવા માંગો છો?`}
+      />
 
       {/* Record Payment Modal */}
       <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title={t('recordPayment')}>
