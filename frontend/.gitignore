@@ -1,0 +1,29 @@
+# Node Modules
+node_modules/
+
+# Production Build Output
+dist/
+dist-ssr/
+*.local
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vite / PWA Cache
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

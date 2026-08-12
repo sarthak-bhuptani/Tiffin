@@ -1,0 +1,22 @@
+# Node Modules
+node_modules/
+
+# Environment Variables & API Secrets (SECURITY)
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test Coverage
+coverage/
+.nyc_output/
+
+# IDE & OS Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
