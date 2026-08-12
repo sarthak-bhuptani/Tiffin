@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomers } from '../services/customerService';
-import { createBulkTiffins, parseNotebookImage } from '../services/tiffinService';
+import { createBulkTiffins, parseNotebookImage, getTiffins } from '../services/tiffinService';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 
@@ -37,20 +37,57 @@ const QuickEntry = () => {
   const [entries, setEntries] = useState([]);
   const [activeEntryIndex, setActiveEntryIndex] = useState(null);
 
+  const [loadingDate, setLoadingDate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  // Fetch regular customers list once
   useEffect(() => {
     fetchCustomers();
   }, []);
+
+  // Whenever selected DATE changes, load existing saved entries for that date or initialize fresh rows!
+  useEffect(() => {
+    if (customers.length > 0 || date) {
+      loadDateData(date);
+    }
+  }, [date, customers]);
 
   const fetchCustomers = async () => {
     try {
       const list = await getCustomers({ active: true });
       setCustomers(list);
-      // Pre-fill entries with active regular customers automatically for convenience!
-      if (list.length > 0 && entries.length === 0) {
-        const initialEntries = list.map((c) => ({
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadDateData = async (selectedDate) => {
+    try {
+      setLoadingDate(true);
+      const savedTiffins = await getTiffins({ date: selectedDate });
+
+      if (savedTiffins && savedTiffins.length > 0) {
+        // Render saved entries for the selected date
+        const loadedEntries = savedTiffins.map((tiffin) => ({
+          _id: tiffin._id,
+          customerId: tiffin.customerId || null,
+          customerName: tiffin.customerName,
+          area: tiffin.area || 'General',
+          quantity: tiffin.quantity,
+          unitPrice: tiffin.unitPrice,
+          totalAmount: tiffin.totalAmount,
+          status: tiffin.status || 'delivered',
+          mealType: tiffin.mealType || 'lunch',
+          skipReason: tiffin.skipReason || '',
+          paymentStatus: tiffin.paymentStatus || 'PAID',
+          paidAmount: tiffin.paidAmount || 0,
+          notes: tiffin.notes || '',
+        }));
+        setEntries(loadedEntries);
+      } else {
+        // Initialize fresh entries for active regular customers for a new day
+        const freshEntries = customers.map((c) => ({
           customerId: c._id,
           customerName: c.name,
           area: c.area || 'General',
@@ -64,10 +101,12 @@ const QuickEntry = () => {
           paidAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
           notes: '',
         }));
-        setEntries(initialEntries);
+        setEntries(freshEntries);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error loading tiffins for date:', err);
+    } finally {
+      setLoadingDate(false);
     }
   };
 
@@ -286,13 +325,13 @@ const QuickEntry = () => {
         </div>
 
         {/* Date Selector */}
-        <div className="flex items-center space-x-1 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200">
+        <div className="flex items-center space-x-1.5 bg-orange-50 px-3 py-2 rounded-xl border border-orange-200 shadow-xs">
           <Calendar className="w-4 h-4 text-orange-600" />
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="bg-transparent text-xs font-bold text-slate-800 focus:outline-none"
+            className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
           />
         </div>
       </div>
@@ -387,7 +426,9 @@ const QuickEntry = () => {
 
       {/* Digital Notebook Entry Table / List */}
       <div className="space-y-3">
-        {entries.length === 0 ? (
+        {loadingDate ? (
+          <div className="py-12 text-center text-slate-400 text-sm font-medium">{t('loading')}</div>
+        ) : entries.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-slate-300">
             <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
             <p className="text-sm font-medium text-slate-500">{t('noEntries')}</p>

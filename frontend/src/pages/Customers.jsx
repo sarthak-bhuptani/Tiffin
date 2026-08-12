@@ -105,7 +105,7 @@ const Customers = () => {
       `🍱 ટિફિન પ્લાન: *${cust.defaultQuantity} નંગ (₹${cust.defaultPrice}/ટિફિન)*\n` +
       `📍 એરિયા: *${cust.area}*\n\n` +
       `📱 GPay / PhonePe / UPI દ્વારા ચુકવણી કરી શકો છો.\n` +
-      `ધન્યવાદ! 🍱✨`
+      `Thank YOu! 🍱✨`
     );
   };
 
