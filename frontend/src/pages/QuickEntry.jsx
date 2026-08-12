@@ -46,7 +46,7 @@ const QuickEntry = () => {
     fetchCustomers();
   }, []);
 
-  // Whenever selected DATE changes, load existing saved entries for that date or initialize fresh rows!
+  // Whenever selected DATE changes, load existing saved entries for that date
   useEffect(() => {
     if (customers.length > 0 || date) {
       loadDateData(date);
@@ -86,22 +86,29 @@ const QuickEntry = () => {
         }));
         setEntries(loadedEntries);
       } else {
-        // Initialize fresh entries for active regular customers for a new day
-        const freshEntries = customers.map((c) => ({
-          customerId: c._id,
-          customerName: c.name,
-          area: c.area || 'General',
-          quantity: c.defaultQuantity || 1,
-          unitPrice: c.defaultLunchPrice || c.defaultPrice || 60,
-          totalAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
-          status: 'delivered',
-          mealType: 'lunch',
-          skipReason: '',
-          paymentStatus: 'PAID',
-          paidAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
-          notes: '',
-        }));
-        setEntries(freshEntries);
+        // If selected date is TODAY, pre-fill regular customers for convenience;
+        // If selected date is any OTHER date with no saved data, show EMPTY list!
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (selectedDate === todayStr) {
+          const freshEntries = customers.map((c) => ({
+            customerId: c._id,
+            customerName: c.name,
+            area: c.area || 'General',
+            quantity: c.defaultQuantity || 1,
+            unitPrice: c.defaultLunchPrice || c.defaultPrice || 60,
+            totalAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
+            status: 'delivered',
+            mealType: 'lunch',
+            skipReason: '',
+            paymentStatus: 'PAID',
+            paidAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
+            notes: '',
+          }));
+          setEntries(freshEntries);
+        } else {
+          setEntries([]); // Keep completely empty for other dates with no saved records!
+        }
       }
     } catch (err) {
       console.error('Error loading tiffins for date:', err);
@@ -431,7 +438,8 @@ const QuickEntry = () => {
         ) : entries.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-slate-300">
             <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-sm font-medium text-slate-500">{t('noEntries')}</p>
+            <p className="text-sm font-medium text-slate-500">આ તારીખની કોઈ એન્ટ્રી થઈ નથી. ({date})</p>
+            <p className="text-xs text-slate-400 mt-1">No entries recorded for this date.</p>
             <button
               onClick={handleAddBlankRow}
               className="mt-3 px-4 py-2 bg-orange-600 text-white font-bold text-xs rounded-xl shadow-xs"
