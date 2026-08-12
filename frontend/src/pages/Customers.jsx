@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomers, createCustomer } from '../services/customerService';
 import Modal from '../components/Modal';
+import Toast from '../components/Toast';
 
-import { Users, Plus, Search, Phone, MapPin, ChevronRight, UserCheck, UserX } from 'lucide-react';
+import { Users, Plus, Search, Phone, MapPin, ChevronRight } from 'lucide-react';
 
 const Customers = () => {
   const { t } = useLanguage();
@@ -14,6 +15,7 @@ const Customers = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'active'
+  const [toastMessage, setToastMessage] = useState('');
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -57,6 +59,7 @@ const Customers = () => {
       setSubmitting(true);
       await createCustomer(formData);
       setIsAddModalOpen(false);
+      setToastMessage('✅ ગ્રાહક સફળતાપૂર્વક ઉમેરાયો! (Customer Added Successfully!)');
       setFormData({
         name: '',
         phone: '',
@@ -77,6 +80,8 @@ const Customers = () => {
 
   return (
     <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4">
+      <Toast message={toastMessage} onClose={() => setToastMessage('')} />
+
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div>
