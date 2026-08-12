@@ -28,8 +28,18 @@ const getCustomerPayments = async (req, res, next) => {
   }
 };
 
+const deletePayment = async (req, res, next) => {
+  try {
+    await paymentService.deletePayment(req.params.id);
+    return sendSuccess(res, 200, 'Payment deleted successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   recordPayment,
   getPayments,
   getCustomerPayments,
+  deletePayment,
 };

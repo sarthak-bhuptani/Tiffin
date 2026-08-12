@@ -10,5 +10,6 @@ router.use(protect);
 router.post('/', validate(createPaymentSchema), paymentController.recordPayment);
 router.get('/', paymentController.getPayments);
 router.get('/customer/:customerId', paymentController.getCustomerPayments);
+router.delete('/:id', paymentController.deletePayment);
 
 module.exports = router;

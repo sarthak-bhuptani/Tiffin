@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { getExpenses, createExpense, deleteExpense } from '../services/expenseService';
-import { getPayments, recordPayment } from '../services/paymentService';
+import { getPayments, recordPayment, deletePayment } from '../services/paymentService';
 import { getCustomers } from '../services/customerService';
 import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
 
 import { Wallet, Receipt, Plus, Trash2, Calendar, IndianRupee, Tag } from 'lucide-react';
 
@@ -15,6 +16,7 @@ const Accounts = () => {
   const [payments, setPayments] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [itemToDelete, setItemToDelete] = useState(null); // { type: 'expense'|'payment', id: string, name: string }
 
   // Expense Modal State
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -107,10 +109,15 @@ const Accounts = () => {
     }
   };
 
-  const handleDeleteExpense = async (id) => {
-    if (!window.confirm('Delete expense record?')) return;
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      await deleteExpense(id);
+      if (itemToDelete.type === 'expense') {
+        await deleteExpense(itemToDelete.id);
+      } else if (itemToDelete.type === 'payment') {
+        await deletePayment(itemToDelete.id);
+      }
+      setItemToDelete(null);
       fetchData();
     } catch (err) {
       alert(err.response?.data?.message || t('errorOccurred'));
@@ -119,6 +126,15 @@ const Accounts = () => {
 
   return (
     <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4">
+      {/* Delete Confirm Modal */}
+      <ConfirmModal
+        isOpen={itemToDelete !== null}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title={itemToDelete?.type === 'expense' ? 'ખર્ચ ડીલીટ કરો' : 'પેમેન્ટ જમા ડીલીટ કરો'}
+        message={`શું તમે ચોક્કસ "${itemToDelete?.name || ''}" રેકોર્ડ ને ડેટાબેઝમાંથી કાયમ માટે ડીલીટ કરવા માંગો છો?`}
+      />
+
       {/* Tab Selector */}
       <div className="flex items-center justify-between bg-white rounded-2xl p-1.5 border border-orange-100 shadow-xs">
         <button
@@ -191,7 +207,11 @@ const Accounts = () => {
 
                 <div className="flex items-center space-x-3">
                   <span className="text-base font-bold text-rose-600">₹{exp.amount}</span>
-                  <button onClick={() => handleDeleteExpense(exp._id)} className="p-1 text-slate-300 hover:text-rose-600 transition">
+                  <button
+                    onClick={() => setItemToDelete({ type: 'expense', id: exp._id, name: `${exp.category} (₹${exp.amount})` })}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                    title="ડેટાબેઝમાંથી ડીલીટ કરો"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -222,7 +242,16 @@ const Accounts = () => {
                   {pay.notes && <p className="text-xs italic text-slate-500 mt-0.5">"{pay.notes}"</p>}
                 </div>
 
-                <span className="text-base font-bold text-emerald-600">₹{pay.amount}</span>
+                <div className="flex items-center space-x-3">
+                  <span className="text-base font-bold text-emerald-600">₹{pay.amount}</span>
+                  <button
+                    onClick={() => setItemToDelete({ type: 'payment', id: pay._id, name: `${pay.customerName || 'Payment'} (₹${pay.amount})` })}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                    title="ડેટાબેઝમાંથી ડીલીટ કરો"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

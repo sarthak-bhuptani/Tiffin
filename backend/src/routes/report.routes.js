@@ -8,5 +8,6 @@ router.use(protect);
 router.get('/daily', reportController.getDailyReport);
 router.get('/monthly', reportController.getMonthlyReport);
 router.get('/custom', reportController.getCustomReport);
+router.delete('/reset-all', reportController.resetAllData);
 
 module.exports = router;

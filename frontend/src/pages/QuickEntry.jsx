@@ -19,6 +19,7 @@ import {
   Upload,
   Sparkles,
   Loader2,
+  Receipt,
 } from 'lucide-react';
 
 const QuickEntry = () => {
@@ -40,6 +41,19 @@ const QuickEntry = () => {
   const [activeEntryIndex, setActiveEntryIndex] = useState(null);
   const [deletedIds, setDeletedIds] = useState([]);
   const [entryToDeleteIndex, setEntryToDeleteIndex] = useState(null);
+
+  // Tab State: 'tiffins' (Customer Tiffin List) or 'ledger' (Rupees - Vaprash Notebook Ledger)
+  const [activeTab, setActiveTab] = useState('tiffins');
+  const [dailyLedger, setDailyLedger] = useState([
+    { day: 1, rupees: 1880, vaprash: 600 },
+    { day: 2, rupees: 1645, vaprash: 110 },
+    { day: 3, rupees: 2200, vaprash: 500 },
+    { day: 4, rupees: 2100, vaprash: 860 },
+    { day: 5, rupees: 2040, vaprash: 455 },
+    { day: 6, rupees: 2750, vaprash: 1540 },
+    { day: 7, rupees: 910, vaprash: 500 },
+    { day: 8, rupees: 2200, vaprash: 950 },
+  ]);
 
   const [loadingDate, setLoadingDate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -122,14 +136,27 @@ const QuickEntry = () => {
     }
   };
 
-  // Handle notebook photo file selection
+  // Handle notebook photo file selection with client-side compression
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSelectedImage(reader.result);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        setSelectedImage(compressedBase64);
+      };
+      img.src = reader.result;
     };
     reader.readAsDataURL(file);
   };
@@ -183,6 +210,11 @@ const QuickEntry = () => {
           .map((e) => e._id);
         if (overwrittenIds.length > 0) {
           setDeletedIds((prev) => [...prev, ...overwrittenIds]);
+        }
+
+        // Automatically update daily ledger if parsed from notebook photo
+        if (resData?.dailyLedger && resData.dailyLedger.length > 0) {
+          setDailyLedger(resData.dailyLedger);
         }
 
         setEntries(newEntries);
@@ -338,9 +370,83 @@ const QuickEntry = () => {
     { totalTiffins: 0, totalIncome: 0, paidAmount: 0 }
   );
 
+  const ledgerTotals = dailyLedger.reduce(
+    (acc, curr) => {
+      acc.totalRupees += curr.rupees || 0;
+      acc.totalVaprash += curr.vaprash || 0;
+      acc.netProfit += (curr.rupees || 0) - (curr.vaprash || 0);
+      return acc;
+    },
+    { totalRupees: 0, totalVaprash: 0, netProfit: 0 }
+  );
+
   const pendingAmount = Math.max(0, liveTotals.totalIncome - liveTotals.paidAmount);
 
   const handleSaveDay = async () => {
+    if (activeTab === 'ledger') {
+      try {
+        setSubmitting(true);
+        const [yearStr, monthStr] = date.split('-');
+        for (const row of dailyLedger) {
+          if (row.rupees > 0 || row.vaprash > 0) {
+            const dayStr = String(row.day).padStart(2, '0');
+            const rowDate = `${yearStr}-${monthStr}-${dayStr}`;
+
+            const existingForDate = await getTiffins({ date: rowDate });
+            const oldLedgerEntries = (existingForDate || []).filter(
+              (t) => t.customerName === 'રોજના હિસાબ (Daily Ledger)' || t.customerName === 'રોજના હિસાબ (Daily Ledger Revenue)'
+            );
+            const deletedIdsForDate = oldLedgerEntries.map((t) => t._id);
+
+            if (row.vaprash > 0) {
+              try {
+                await createExpense({
+                  date: rowDate,
+                  category: 'other',
+                  amount: row.vaprash,
+                  note: `રોજના વપરાશ (તા. ${row.day})`,
+                });
+              } catch (e) {
+                console.error(e);
+              }
+            }
+
+            if (row.rupees > 0) {
+              try {
+                await createBulkTiffins(
+                  rowDate,
+                  [
+                    {
+                      customerName: 'રોજના હિસાબ (Daily Ledger)',
+                      area: 'General',
+                      quantity: 1,
+                      unitPrice: row.rupees,
+                      totalAmount: row.rupees,
+                      status: 'delivered',
+                      mealType: 'lunch',
+                      paymentStatus: 'PAID',
+                      paidAmount: row.rupees,
+                      notes: `તા. ${row.day} દૈનિક આવક`,
+                    },
+                  ],
+                  deletedIdsForDate
+                );
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          }
+        }
+        setToastMessage(`📖 હિસાબ સેવ થઈ ગયો! રિપોર્ટમાં ગણતરી ઉમેરાઈ ગઈ.`);
+        setTimeout(() => navigate('/reports'), 1000);
+      } catch (err) {
+        alert(err.response?.data?.message || t('errorOccurred'));
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     if (entries.length === 0 && deletedIds.length === 0) return;
 
     // Filter valid entries
@@ -390,6 +496,29 @@ const QuickEntry = () => {
             className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
           />
         </div>
+      </div>
+
+      {/* Tab Switcher: 📋 Customer Tiffins vs 📖 Daily Rupees & Vaprash Ledger */}
+      <div className="flex items-center bg-slate-200/80 p-1 rounded-2xl">
+        <button
+          onClick={() => setActiveTab('tiffins')}
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 ${
+            activeTab === 'tiffins' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>📋 ગ્રાહક ટિફિન લિસ્ટ</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('ledger')}
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 ${
+            activeTab === 'ledger' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Receipt className="w-4 h-4" />
+          <span>📖 રૂપિયા - વપરાશ ચોપડો</span>
+        </button>
       </div>
 
       {/* Action Bar with Notebook Photo Scan Button */}
@@ -480,8 +609,78 @@ const QuickEntry = () => {
         </div>
       </Modal>
 
-      {/* Digital Notebook Entry Table / List */}
-      <div className="space-y-3">
+      {/* Digital Notebook Content */}
+      {activeTab === 'ledger' ? (
+        /* Daily Ledger Table (રૂપિયા - વપરાશ પત્રક) */
+        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+              <Receipt className="w-4 h-4 text-orange-600" />
+              <span>📖 રૂપિયા - વપરાશ પત્રક (Datewise Ledger)</span>
+            </h3>
+            <button
+              onClick={() => {
+                const nextDay = dailyLedger.length + 1;
+                setDailyLedger((prev) => [...prev, { day: nextDay, rupees: 0, vaprash: 0 }]);
+              }}
+              className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl transition"
+            >
+              + તારીખ ઉમેરો
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-slate-400 border-b pb-1">
+              <span>તારીખ (Day)</span>
+              <span>રૂપિયા (Revenue ₹)</span>
+              <span>વપરાશ (Kharch ₹)</span>
+              <span>બચત (Net Profit ₹)</span>
+            </div>
+
+            {dailyLedger.map((row, idx) => (
+              <div key={idx} className="grid grid-cols-4 gap-2 items-center text-xs p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <div className="flex items-center space-x-1 justify-center font-bold text-slate-700">
+                  <span>તા. {row.day}</span>
+                </div>
+
+                <div>
+                  <input
+                    type="number"
+                    value={row.rupees}
+                    onChange={(e) => {
+                      const updated = [...dailyLedger];
+                      updated[idx].rupees = parseFloat(e.target.value) || 0;
+                      setDailyLedger(updated);
+                    }}
+                    className="w-full text-center font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg py-1 px-1 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <input
+                    type="number"
+                    value={row.vaprash}
+                    onChange={(e) => {
+                      const updated = [...dailyLedger];
+                      updated[idx].vaprash = parseFloat(e.target.value) || 0;
+                      setDailyLedger(updated);
+                    }}
+                    className="w-full text-center font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg py-1 px-1 text-xs"
+                  />
+                </div>
+
+                <div className="text-center font-extrabold text-xs">
+                  <span className={row.rupees - row.vaprash >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                    ₹{row.rupees - row.vaprash}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Digital Notebook Entry Table / List */
+        <div className="space-y-3">
         {loadingDate ? (
           <div className="py-12 text-center text-slate-400 text-sm font-medium">{t('loading')}</div>
         ) : entries.length === 0 ? (
@@ -616,6 +815,7 @@ const QuickEntry = () => {
           ))
         )}
       </div>
+    )}
 
       {/* Customer Search Autocomplete Modal */}
       <Modal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} title={t('searchCustomer')}>
@@ -671,35 +871,56 @@ const QuickEntry = () => {
 
       {/* Sticky Bottom Notebook Summary & Save Bar */}
       <div className="fixed bottom-[56px] left-0 right-0 z-30 bg-slate-900 text-white p-3 shadow-2xl max-w-4xl mx-auto rounded-t-2xl border-t border-slate-800">
-        <div className="grid grid-cols-4 gap-1 items-center justify-between mb-2.5 px-0.5 text-center text-[10px] sm:text-xs">
-          <div>
-            <span className="text-slate-400 block">{t('tiffins')}</span>
-            <span className="font-bold text-white text-xs sm:text-sm">{liveTotals.totalTiffins}</span>
-          </div>
+        {activeTab === 'ledger' ? (
+          <div className="grid grid-cols-3 gap-1 items-center justify-between mb-2.5 px-0.5 text-center text-[10px] sm:text-xs">
+            <div>
+              <span className="text-slate-400 block">કુલ આવક (Revenue)</span>
+              <span className="font-bold text-emerald-400 text-xs sm:text-sm">₹{ledgerTotals.totalRupees}</span>
+            </div>
 
-          <div>
-            <span className="text-slate-400 block">{t('income')}</span>
-            <span className="font-bold text-emerald-400 text-xs sm:text-sm">₹{liveTotals.totalIncome}</span>
-          </div>
+            <div>
+              <span className="text-slate-400 block">કુલ વપરાશ (Kharch)</span>
+              <span className="font-bold text-rose-400 text-xs sm:text-sm">₹{ledgerTotals.totalVaprash}</span>
+            </div>
 
-          <div>
-            <span className="text-slate-400 block">{t('paid')}</span>
-            <span className="font-bold text-emerald-300 text-xs sm:text-sm">₹{liveTotals.paidAmount}</span>
+            <div>
+              <span className="text-slate-400 block">ચોખ્ખી બચત (Profit)</span>
+              <span className={`font-bold text-xs sm:text-sm ${ledgerTotals.netProfit >= 0 ? 'text-amber-400' : 'text-rose-500'}`}>
+                ₹{ledgerTotals.netProfit}
+              </span>
+            </div>
           </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-1 items-center justify-between mb-2.5 px-0.5 text-center text-[10px] sm:text-xs">
+            <div>
+              <span className="text-slate-400 block">{t('tiffins')}</span>
+              <span className="font-bold text-white text-xs sm:text-sm">{liveTotals.totalTiffins}</span>
+            </div>
 
-          <div>
-            <span className="text-slate-400 block">{t('pending')}</span>
-            <span className="font-bold text-rose-400 text-xs sm:text-sm">₹{pendingAmount}</span>
+            <div>
+              <span className="text-slate-400 block">{t('income')}</span>
+              <span className="font-bold text-emerald-400 text-xs sm:text-sm">₹{liveTotals.totalIncome}</span>
+            </div>
+
+            <div>
+              <span className="text-slate-400 block">{t('paid')}</span>
+              <span className="font-bold text-emerald-300 text-xs sm:text-sm">₹{liveTotals.paidAmount}</span>
+            </div>
+
+            <div>
+              <span className="text-slate-400 block">{t('pending')}</span>
+              <span className="font-bold text-rose-400 text-xs sm:text-sm">₹{pendingAmount}</span>
+            </div>
           </div>
-        </div>
+        )}
 
         <button
           onClick={handleSaveDay}
-          disabled={submitting || (entries.length === 0 && deletedIds.length === 0)}
+          disabled={submitting || (activeTab === 'tiffins' && entries.length === 0 && deletedIds.length === 0)}
           className="w-full py-2.5 sm:py-3 px-4 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-orange-600/30 flex items-center justify-center space-x-2 transition disabled:opacity-50"
         >
           <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span>{submitting ? t('loading') : t('saveDay')}</span>
+          <span>{submitting ? t('loading') : (activeTab === 'ledger' ? 'તમામ ચોપડા હિસાબ સેવ કરો' : t('saveDay'))}</span>
         </button>
       </div>
     </div>

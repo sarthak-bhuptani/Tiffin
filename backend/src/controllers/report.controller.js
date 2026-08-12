@@ -35,8 +35,24 @@ const getCustomReport = async (req, res, next) => {
   }
 };
 
+const DailyTiffin = require('../models/dailyTiffin.model');
+const Expense = require('../models/expense.model');
+const Payment = require('../models/payment.model');
+
+const resetAllData = async (req, res, next) => {
+  try {
+    await DailyTiffin.deleteMany({});
+    await Expense.deleteMany({});
+    await Payment.deleteMany({});
+    return sendSuccess(res, 200, 'All report records wiped successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDailyReport,
   getMonthlyReport,
   getCustomReport,
+  resetAllData,
 };

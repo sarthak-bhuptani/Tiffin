@@ -24,3 +24,8 @@ export const getCustomReport = async (startDate, endDate) => {
   const res = await API.get('/reports/custom', { params: { startDate, endDate } });
   return res.data.data;
 };
+
+export const resetAllReports = async () => {
+  const res = await API.delete('/reports/reset-all');
+  return res.data;
+};

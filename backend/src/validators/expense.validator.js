@@ -12,6 +12,8 @@ const createExpenseSchema = z.object({
       'electricity',
       'rent',
       'other',
+      'general',
+      'vaprash',
     ]),
     amount: z.number().min(0.01, 'Expense amount must be greater than 0'),
     note: z.string().optional(),

@@ -61,8 +61,17 @@ const getCustomerPayments = async (customerId) => {
   return payments;
 };
 
+const deletePayment = async (id) => {
+  const payment = await Payment.findByIdAndDelete(id);
+  if (!payment) {
+    throw new AppError('Payment record not found', 404);
+  }
+  return payment;
+};
+
 module.exports = {
   recordPayment,
   getPayments,
   getCustomerPayments,
+  deletePayment,
 };
