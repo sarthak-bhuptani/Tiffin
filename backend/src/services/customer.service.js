@@ -91,7 +91,7 @@ const updateCustomer = async (id, updateData) => {
 };
 
 const deleteCustomer = async (id) => {
-  const customer = await Customer.findByIdAndUpdate(id, { active: false }, { new: true });
+  const customer = await Customer.findByIdAndDelete(id);
   if (!customer) {
     throw new AppError('Customer not found', 404);
   }

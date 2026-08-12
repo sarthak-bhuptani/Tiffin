@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { getCustomers, createCustomer } from '../services/customerService';
+import { getCustomers, createCustomer, deleteCustomer } from '../services/customerService';
 import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 
-import { Users, Plus, Search, Phone, MapPin, ChevronRight } from 'lucide-react';
+import { Users, Plus, Search, Phone, MapPin, ChevronRight, Trash2 } from 'lucide-react';
 
 const Customers = () => {
   const { t } = useLanguage();
@@ -16,6 +17,9 @@ const Customers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'active'
   const [toastMessage, setToastMessage] = useState('');
+
+  // Delete modal state
+  const [customerToDelete, setCustomerToDelete] = useState(null);
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -75,6 +79,18 @@ const Customers = () => {
       alert(err.response?.data?.message || t('errorOccurred'));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!customerToDelete) return;
+    try {
+      await deleteCustomer(customerToDelete._id);
+      setToastMessage('✅ ગ્રાહક કાયમ માટે ડીલીટ થયો! (Customer Deleted Permanently!)');
+      setCustomers((prev) => prev.filter((c) => c._id !== customerToDelete._id));
+      setCustomerToDelete(null);
+    } catch (err) {
+      alert(err.response?.data?.message || t('errorOccurred'));
     }
   };
 
@@ -145,10 +161,12 @@ const Customers = () => {
           {customers.map((cust) => (
             <div
               key={cust._id}
-              onClick={() => navigate(`/customers/${cust._id}`)}
-              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-orange-300 transition shadow-xs cursor-pointer flex items-center justify-between"
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-orange-300 transition shadow-xs flex items-center justify-between"
             >
-              <div className="space-y-1">
+              <div
+                onClick={() => navigate(`/customers/${cust._id}`)}
+                className="space-y-1 flex-1 cursor-pointer"
+              >
                 <div className="flex items-center space-x-2">
                   <h3 className="font-bold text-slate-900 text-sm">{cust.name}</h3>
                   {cust.active ? (
@@ -181,11 +199,37 @@ const Customers = () => {
                 </p>
               </div>
 
-              <ChevronRight className="w-5 h-5 text-slate-300" />
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCustomerToDelete(cust);
+                  }}
+                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition active:scale-95"
+                  title="Delete Customer Permanently"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                <ChevronRight
+                  className="w-5 h-5 text-slate-300 cursor-pointer"
+                  onClick={() => navigate(`/customers/${cust._id}`)}
+                />
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Popup */}
+      <ConfirmModal
+        isOpen={Boolean(customerToDelete)}
+        onClose={() => setCustomerToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        title="ગ્રાહક ડીલીટ કરો (Delete Customer)"
+        message={`શું તમે ચોક્કસ ગ્રાહક "${customerToDelete?.name}" ને કાયમ માટે ડીલીટ કરવા માંગો છો?`}
+      />
 
       {/* Add Customer Modal */}
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('addNewCustomer')}>
