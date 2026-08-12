@@ -6,7 +6,7 @@ import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 
-import { Users, Plus, Search, Phone, MapPin, ChevronRight, Trash2 } from 'lucide-react';
+import { Users, Plus, Search, Phone, MapPin, ChevronRight, Trash2, MessageCircle, Share2 } from 'lucide-react';
 
 const Customers = () => {
   const { t } = useLanguage();
@@ -17,6 +17,9 @@ const Customers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'active'
   const [toastMessage, setToastMessage] = useState('');
+
+  // WhatsApp modal state
+  const [whatsAppCustomer, setWhatsAppCustomer] = useState(null);
 
   // Delete modal state
   const [customerToDelete, setCustomerToDelete] = useState(null);
@@ -92,6 +95,37 @@ const Customers = () => {
     } catch (err) {
       alert(err.response?.data?.message || t('errorOccurred'));
     }
+  };
+
+  const getWhatsAppMessage = (cust) => {
+    if (!cust) return '';
+    const todayStr = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
+    return (
+      `નમસ્તે ${cust.name} જી! 🙏\n\n` +
+      `આ મહિનાનો (${todayStr}) ટિફિનનો હિસાબ:\n` +
+      `🍱 ટિફિન પ્લાન: *${cust.defaultQuantity} નંગ (₹${cust.defaultPrice}/ટિફિન)*\n` +
+      `📍 એરિયા: *${cust.area}*\n\n` +
+      `📱 GPay / PhonePe / UPI દ્વારા ચુકવણી કરી શકો છો.\n` +
+      `ધન્યવાદ! 🍱✨`
+    );
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!whatsAppCustomer) return;
+    const message = getWhatsAppMessage(whatsAppCustomer);
+    const rawPhone = whatsAppCustomer.phone || '';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+
+    let url = '';
+    if (cleanPhone.length >= 10) {
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    } else {
+      url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    }
+
+    window.open(url, '_blank');
+    setWhatsAppCustomer(null);
   };
 
   return (
@@ -199,7 +233,20 @@ const Customers = () => {
                 </p>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
+                {/* 1-Tap WhatsApp Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setWhatsAppCustomer(cust);
+                  }}
+                  className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 transition active:scale-95"
+                  title="Send WhatsApp Bill"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </button>
+
                 <button
                   type="button"
                   onClick={(e) => {
@@ -221,6 +268,24 @@ const Customers = () => {
           ))}
         </div>
       )}
+
+      {/* WhatsApp Modal */}
+      <Modal isOpen={Boolean(whatsAppCustomer)} onClose={() => setWhatsAppCustomer(null)} title="💬 WhatsApp મેસેજ">
+        <div className="space-y-4">
+          <div className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 font-sans text-xs text-slate-800 whitespace-pre-line leading-relaxed shadow-xs">
+            {getWhatsAppMessage(whatsAppCustomer)}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSendWhatsApp}
+            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/30 flex items-center justify-center space-x-2 transition active:scale-98"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>WhatsApp ખોલો અને મેસેજ મોકલો (Open WhatsApp & Send)</span>
+          </button>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Popup */}
       <ConfirmModal

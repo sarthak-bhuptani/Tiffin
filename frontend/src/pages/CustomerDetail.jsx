@@ -13,6 +13,8 @@ import {
   MapPin,
   Plus,
   Trash2,
+  MessageCircle,
+  Share2,
 } from 'lucide-react';
 
 const CustomerDetail = () => {
@@ -33,6 +35,9 @@ const CustomerDetail = () => {
     paymentDate: new Date().toISOString().split('T')[0],
   });
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+
+  // WhatsApp Bill Modal State
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
 
   // Delete Confirmation Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -94,6 +99,42 @@ const CustomerDetail = () => {
     }
   };
 
+  // Generate Gujarati WhatsApp Bill Message
+  const getWhatsAppBillMessage = () => {
+    if (!data || !data.customer || !data.stats) return '';
+    const { customer, stats } = data;
+    const todayStr = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
+
+    return (
+      `નમસ્તે ${customer.name} જી! 🙏\n\n` +
+      `આ મહિનાનો (${todayStr}) ટિફિનનો હિસાબ:\n` +
+      `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
+      `💵 ટિફિન ભાવ: *₹${customer.defaultPrice}/ટિફિન*\n` +
+      `💰 કુલ હિસાબ: *₹${stats.totalBilled}*\n` +
+      `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
+      `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n\n` +
+      `📱 GPay / PhonePe / UPI દ્વારા ચુકવણી કરી શકો છો.\n` +
+      `ધન્યવાદ! 🍱✨`
+    );
+  };
+
+  const handleSendWhatsApp = () => {
+    const message = getWhatsAppBillMessage();
+    const rawPhone = data?.customer?.phone || '';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+
+    let url = '';
+    if (cleanPhone.length >= 10) {
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    } else {
+      url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    }
+
+    window.open(url, '_blank');
+    setIsWhatsAppModalOpen(false);
+  };
+
   if (loading) {
     return <div className="py-24 text-center text-slate-400 text-sm font-medium">{t('loading')}</div>;
   }
@@ -129,7 +170,7 @@ const CustomerDetail = () => {
 
       {/* Customer Header Card */}
       <div className="bg-white rounded-3xl p-5 border border-orange-100 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-orange-600/30">
               {customer.name.charAt(0)}
@@ -151,13 +192,24 @@ const CustomerDetail = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsPaymentModalOpen(true)}
-            className="flex items-center space-x-1 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition active:scale-98"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t('recordPayment')}</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            {/* 1-Tap WhatsApp Bill Button */}
+            <button
+              onClick={() => setIsWhatsAppModalOpen(true)}
+              className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/30 transition active:scale-98"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>💬 WhatsApp બિલ</span>
+            </button>
+
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="flex items-center space-x-1 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-700/20 transition active:scale-98"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t('recordPayment')}</span>
+            </button>
+          </div>
         </div>
 
         {/* Plan summary badge */}
@@ -234,6 +286,24 @@ const CustomerDetail = () => {
           </div>
         )}
       </div>
+
+      {/* WhatsApp Bill Preview Modal */}
+      <Modal isOpen={isWhatsAppModalOpen} onClose={() => setIsWhatsAppModalOpen(false)} title="💬 WhatsApp બિલ મેસેજ">
+        <div className="space-y-4">
+          <div className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 font-sans text-xs text-slate-800 whitespace-pre-line leading-relaxed shadow-xs">
+            {getWhatsAppBillMessage()}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSendWhatsApp}
+            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/30 flex items-center justify-center space-x-2 transition active:scale-98"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>WhatsApp ખોલો અને મેસેજ મોકલો (Open WhatsApp & Send)</span>
+          </button>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Popup */}
       <ConfirmModal
