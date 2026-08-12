@@ -1,11 +1,19 @@
 import axios from 'axios';
 
+// Ensure base URL points to live Vercel backend or fallback
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || 'https://tiffin-indol.vercel.app/api';
+const baseURL = rawBaseURL.endsWith('/') ? rawBaseURL : `${rawBaseURL}/`;
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://tiffin-indol.vercel.app/api',
+  baseURL,
 });
 
 API.interceptors.request.use(
   (config) => {
+    // Strip leading slash if present to avoid resetting baseURL origin in Axios
+    if (config.url && config.url.startsWith('/')) {
+      config.url = config.url.substring(1);
+    }
     const token = localStorage.getItem('tiffin_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

@@ -16,7 +16,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: '*',
     credentials: true,
   })
 );
@@ -40,14 +40,27 @@ app.get('/api/health', (req, res) => {
 // Swagger API Docs
 setupSwagger(app);
 
-// Mount REST Routes
+// Mount REST Routes (Supports both /api/... and direct /... paths for robust client compatibility)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/customers', customerRoutes);
+app.use('/customers', customerRoutes);
+
 app.use('/api/tiffins', tiffinRoutes);
+app.use('/tiffins', tiffinRoutes);
+
 app.use('/api/payments', paymentRoutes);
+app.use('/payments', paymentRoutes);
+
 app.use('/api/expenses', expenseRoutes);
+app.use('/expenses', expenseRoutes);
+
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/dashboard', dashboardRoutes);
+
 app.use('/api/reports', reportRoutes);
+app.use('/reports', reportRoutes);
 
 // Catch 404
 app.use((req, res) => {
