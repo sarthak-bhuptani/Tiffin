@@ -1,4 +1,5 @@
 const tiffinService = require('../services/tiffin.service');
+const ocrService = require('../services/ocr.service');
 const { sendSuccess } = require('../utils/apiResponse');
 
 const createSingleTiffin = async (req, res, next) => {
@@ -15,6 +16,15 @@ const createBulkTiffins = async (req, res, next) => {
     const { date, entries } = req.body;
     const result = await tiffinService.createBulkTiffins(date, entries);
     return sendSuccess(res, 201, 'Bulk daily tiffins saved successfully', result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const parseNotebookImage = async (req, res, next) => {
+  try {
+    const entries = await ocrService.parseNotebookContent(req.body);
+    return sendSuccess(res, 200, 'Notebook parsed successfully', { entries });
   } catch (error) {
     next(error);
   }
@@ -59,6 +69,7 @@ const deleteTiffin = async (req, res, next) => {
 module.exports = {
   createSingleTiffin,
   createBulkTiffins,
+  parseNotebookImage,
   getTiffins,
   getTiffinById,
   updateTiffin,

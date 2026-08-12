@@ -107,5 +107,9 @@
   "bulkSavedSuccess": "આજના તમામ ટિફિન સેવ થઈ ગયા!",
   "expenseSavedSuccess": "ખર્ચ સફળતાપૂર્વક નોંધાયો!",
   "paymentSavedSuccess": "પેમેન્ટ જમા થઈ ગયું!",
-  "customerSavedSuccess": "ગ્રાહકની માહિતી સેવ થઈ!"
+  "customerSavedSuccess": "ગ્રાહકની માહિતી સેવ થઈ!",
+  "scanNotebook": "ચોપડાનો ફોટો સ્કેન કરો",
+  "uploadNotebookPhoto": "ખાતા વહીનો ફોટો પસંદ કરો",
+  "analyzingImage": "ફોટોમાંથી માહિતી વંચાઈ રહી છે...",
+  "ocrSuccess": "ચોપડામાંથી એન્ટ્રી સફળતાપૂર્વક વંચાઈ ગઈ!"
 }

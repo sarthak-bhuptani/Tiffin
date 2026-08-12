@@ -107,5 +107,9 @@
   "bulkSavedSuccess": "Daily tiffin notebook saved successfully!",
   "expenseSavedSuccess": "Expense saved successfully!",
   "paymentSavedSuccess": "Payment recorded successfully!",
-  "customerSavedSuccess": "Customer saved successfully!"
+  "customerSavedSuccess": "Customer saved successfully!",
+  "scanNotebook": "Scan Notebook Photo",
+  "uploadNotebookPhoto": "Upload Notebook Image",
+  "analyzingImage": "Analyzing notebook handwriting...",
+  "ocrSuccess": "Notebook entries extracted successfully!"
 }

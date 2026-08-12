@@ -15,6 +15,11 @@ export const createBulkTiffins = async (date, entries) => {
   return res.data.data;
 };
 
+export const parseNotebookImage = async (payload) => {
+  const res = await API.post('/tiffins/ocr', payload);
+  return res.data.data.entries;
+};
+
 export const updateTiffin = async (id, data) => {
   const res = await API.patch(`/tiffins/${id}`, data);
   return res.data.data.tiffin;

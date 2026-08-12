@@ -2,19 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomers } from '../services/customerService';
-import { createBulkTiffins, createSingleTiffin } from '../services/tiffinService';
+import { createBulkTiffins, parseNotebookImage } from '../services/tiffinService';
 import Modal from '../components/Modal';
+import Toast from '../components/Toast';
 
 import {
   BookOpen,
   Plus,
   Trash2,
-  CheckCircle2,
   Search,
   Save,
-  UserPlus,
   Calendar,
-  AlertCircle,
+  Camera,
+  Upload,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 
 const QuickEntry = () => {
@@ -26,15 +28,17 @@ const QuickEntry = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  // Notebook photo scan state
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
   // Active entries array acting like a physical notebook sheet
   const [entries, setEntries] = useState([]);
   const [activeEntryIndex, setActiveEntryIndex] = useState(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-
-  // Prompt modal for saving regular customer
-  const [detectedNewCustomer, setDetectedNewCustomer] = useState(null);
 
   useEffect(() => {
     fetchCustomers();
@@ -63,6 +67,53 @@ const QuickEntry = () => {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  // Handle notebook photo file selection
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Analyze notebook image & autofill Quick Entry rows
+  const handleAnalyzeImage = async () => {
+    if (!selectedImage) return;
+
+    try {
+      setAnalyzing(true);
+      const parsedRows = await parseNotebookImage({ base64Image: selectedImage });
+
+      if (parsedRows && parsedRows.length > 0) {
+        const newEntries = parsedRows.map((r) => ({
+          customerId: r.customerId || null,
+          customerName: r.customerName || 'Notebook Customer',
+          area: r.area || 'General',
+          quantity: r.quantity || 1,
+          unitPrice: r.unitPrice || 60,
+          totalAmount: (r.quantity || 1) * (r.unitPrice || 60),
+          status: r.status || 'delivered',
+          skipReason: r.skipReason || '',
+          paymentStatus: r.paymentStatus || 'PAID',
+          paidAmount: r.status === 'skipped' ? 0 : (r.quantity || 1) * (r.unitPrice || 60),
+          notes: 'Extracted from Notebook Scan',
+        }));
+
+        setEntries(newEntries);
+        setIsScanModalOpen(false);
+        setSelectedImage(null);
+        setToastMessage(t('ocrSuccess'));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || t('errorOccurred'));
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -201,6 +252,8 @@ const QuickEntry = () => {
 
   return (
     <div className="pb-36 pt-4 px-4 max-w-4xl mx-auto space-y-4">
+      <Toast message={toastMessage} onClose={() => setToastMessage('')} />
+
       {/* Header */}
       <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-orange-100 shadow-xs">
         <div className="flex items-center space-x-3">
@@ -225,27 +278,93 @@ const QuickEntry = () => {
         </div>
       </div>
 
-      {/* Action Bar */}
-      <div className="flex items-center justify-between">
+      {/* Action Bar with Notebook Photo Scan Button */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={() => setIsScanModalOpen(true)}
+          className="flex-1 flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition active:scale-98"
+        >
+          <Camera className="w-4 h-4" />
+          <span>📸 {t('scanNotebook')}</span>
+        </button>
+
         <button
           onClick={() => {
             setActiveEntryIndex(entries.length);
             setIsSearchOpen(true);
           }}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs border border-orange-200 transition"
+          className="px-3 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs border border-orange-200 transition flex items-center space-x-1"
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-3.5 h-3.5" />
           <span>{t('searchCustomer')}</span>
         </button>
 
         <button
           onClick={handleAddBlankRow}
-          className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition"
+          className="px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition flex items-center space-x-1"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           <span>+ {t('addEntry')}</span>
         </button>
       </div>
+
+      {/* Notebook Photo Scan Modal */}
+      <Modal isOpen={isScanModalOpen} onClose={() => setIsScanModalOpen(false)} title={t('scanNotebook')}>
+        <div className="space-y-4 text-center py-1">
+          {!selectedImage ? (
+            <label className="border-2 border-dashed border-orange-300 hover:border-orange-500 bg-orange-50/50 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition">
+              <Upload className="w-10 h-10 text-orange-600 mb-2" />
+              <p className="font-bold text-sm text-slate-800">{t('uploadNotebookPhoto')}</p>
+              <p className="text-xs text-slate-500 mt-1">Take a photo of paper notebook page or pick image file</p>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+          ) : (
+            <div className="space-y-3">
+              <div className="relative rounded-2xl overflow-hidden border border-slate-200 max-h-60 bg-slate-100">
+                <img src={selectedImage} alt="Notebook preview" className="w-full h-full object-contain" />
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <label className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer transition">
+                  Change Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handleAnalyzeImage}
+                  disabled={analyzing}
+                  className="flex-1 py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-xs shadow-md shadow-orange-600/30 flex items-center justify-center space-x-2 transition"
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{t('analyzingImage')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Analyze & Fill Entries</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
 
       {/* Digital Notebook Entry Table / List */}
       <div className="space-y-3">

@@ -9,6 +9,7 @@ router.use(protect);
 
 router.post('/', validate(singleTiffinSchema), tiffinController.createSingleTiffin);
 router.post('/bulk', validate(bulkTiffinSchema), tiffinController.createBulkTiffins);
+router.post('/ocr', tiffinController.parseNotebookImage);
 router.get('/', tiffinController.getTiffins);
 router.get('/:id', tiffinController.getTiffinById);
 router.patch('/:id', tiffinController.updateTiffin);
