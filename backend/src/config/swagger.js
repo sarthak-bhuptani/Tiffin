@@ -1,5 +1,6 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 
 const options = {
   definition: {
@@ -8,33 +9,155 @@ const options = {
       title: 'Tiffin Business Manager API',
       version: '1.0.0',
       description: 'RESTful API for Home-based Tiffin Business Management System',
-      contact: {
-        name: 'Tiffin Owner Support',
-      },
     },
     servers: [
       {
         url: 'http://localhost:5000',
-        description: 'Development Server',
+        description: 'Development Local Server',
+      },
+      {
+        url: 'https://tiffin-indol.vercel.app',
+        description: 'Vercel Cloud Server',
       },
     ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+    paths: {
+      '/api/customers': {
+        get: {
+          summary: 'Get all customers',
+          tags: ['Customers'],
+          parameters: [
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'active', in: 'query', schema: { type: 'boolean' } },
+          ],
+          responses: { 200: { description: 'Success' } },
+        },
+        post: {
+          summary: 'Create a new customer',
+          tags: ['Customers'],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/CustomerInput' } } },
+          },
+          responses: { 201: { description: 'Created' } },
         },
       },
-      schemas: {
-        LoginInput: {
-          type: 'object',
-          required: ['email', 'password'],
-          properties: {
-            email: { type: 'string', example: 'admin@tiffin.com' },
-            password: { type: 'string', example: 'Admin123!' },
-          },
+      '/api/customers/{id}': {
+        get: {
+          summary: 'Get customer by ID',
+          tags: ['Customers'],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Success' } },
         },
+        put: {
+          summary: 'Update customer',
+          tags: ['Customers'],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/CustomerInput' } } },
+          },
+          responses: { 200: { description: 'Updated' } },
+        },
+      },
+      '/api/tiffins': {
+        get: {
+          summary: 'Get tiffin entries',
+          tags: ['Daily Tiffins'],
+          parameters: [
+            { name: 'date', in: 'query', schema: { type: 'string', example: '2026-08-12' } },
+            { name: 'area', in: 'query', schema: { type: 'string' } },
+            { name: 'status', in: 'query', schema: { type: 'string' } },
+          ],
+          responses: { 200: { description: 'Success' } },
+        },
+        post: {
+          summary: 'Record single daily tiffin',
+          tags: ['Daily Tiffins'],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/DailyTiffinInput' } } },
+          },
+          responses: { 201: { description: 'Created' } },
+        },
+      },
+      '/api/tiffins/quick': {
+        post: {
+          summary: 'Bulk Notebook Quick Entry',
+          tags: ['Daily Tiffins'],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    date: { type: 'string', example: '2026-08-12' },
+                    entries: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/DailyTiffinInput' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: { 201: { description: 'Bulk Created' } },
+        },
+      },
+      '/api/dashboard/today': {
+        get: {
+          summary: "Get today's dashboard metrics",
+          tags: ['Dashboard'],
+          parameters: [{ name: 'date', in: 'query', schema: { type: 'string', example: '2026-08-12' } }],
+          responses: { 200: { description: 'Success' } },
+        },
+      },
+      '/api/payments': {
+        get: {
+          summary: 'Get payment logs',
+          tags: ['Payments'],
+          responses: { 200: { description: 'Success' } },
+        },
+        post: {
+          summary: 'Record payment',
+          tags: ['Payments'],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentInput' } } },
+          },
+          responses: { 201: { description: 'Created' } },
+        },
+      },
+      '/api/expenses': {
+        get: {
+          summary: 'Get expense logs',
+          tags: ['Expenses'],
+          responses: { 200: { description: 'Success' } },
+        },
+        post: {
+          summary: 'Record daily expense',
+          tags: ['Expenses'],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ExpenseInput' } } },
+          },
+          responses: { 201: { description: 'Created' } },
+        },
+      },
+      '/api/reports/monthly': {
+        get: {
+          summary: 'Get monthly financial summary report',
+          tags: ['Reports'],
+          parameters: [
+            { name: 'year', in: 'query', schema: { type: 'number', example: 2026 } },
+            { name: 'month', in: 'query', schema: { type: 'number', example: 8 } },
+          ],
+          responses: { 200: { description: 'Success' } },
+        },
+      },
+    },
+    components: {
+      schemas: {
         CustomerInput: {
           type: 'object',
           required: ['name'],
@@ -50,7 +173,7 @@ const options = {
         },
         DailyTiffinInput: {
           type: 'object',
-          required: ['date', 'customerName', 'unitPrice'],
+          required: ['customerName'],
           properties: {
             date: { type: 'string', example: '2026-08-12' },
             customerName: { type: 'string', example: 'Ramesh' },
@@ -63,7 +186,7 @@ const options = {
         },
         ExpenseInput: {
           type: 'object',
-          required: ['date', 'category', 'amount'],
+          required: ['amount'],
           properties: {
             date: { type: 'string', example: '2026-08-12' },
             category: {
@@ -77,7 +200,7 @@ const options = {
         },
         PaymentInput: {
           type: 'object',
-          required: ['amount', 'paymentDate'],
+          required: ['amount'],
           properties: {
             customerId: { type: 'string', example: '60d5ec49f1b2c8123456789a' },
             amount: { type: 'number', example: 600 },
@@ -87,9 +210,8 @@ const options = {
         },
       },
     },
-    security: [{ bearerAuth: [] }],
   },
-  apis: ['./src/routes/*.js'],
+  apis: [path.join(__dirname, '../routes/*.js')],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
