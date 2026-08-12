@@ -87,23 +87,6 @@ d:/New/
 │   └── package.json
 └── README.md
 ```
-
----
-
-## ⚙️ Environment Variables
-
-Set `backend/.env` with your MongoDB Atlas URI:
-
-```env
-PORT=5000
-MONGO_URI=mongodb+srv://<username>:<password>@cluster0.t8snekz.mongodb.net/tiffin_db?retryWrites=true&w=majority
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRES_IN=30d
-CLIENT_URL=http://localhost:5173
-```
-
----
-
 ## 🚀 Getting Started & Installation
 
 ### 1. Backend Setup
@@ -131,11 +114,3 @@ cd backend
 npm test
 ```
 
-Includes 8 integration tests covering customer creation, single and bulk notebook daily entries, payments, expenses, today's dashboard calculations, and monthly profit aggregations.
-
----
-
-## 🌐 API Documentation
-
-Access interactive OpenAPI Swagger UI documentation at:
-**`http://localhost:5000/api-docs`**
