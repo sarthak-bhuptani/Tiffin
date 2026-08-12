@@ -24,6 +24,7 @@ const Dashboard = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,12 +39,10 @@ const Dashboard = () => {
   const [expenseSubmitting, setExpenseSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (targetDate) => {
     try {
       setLoading(true);
-      const res = await getTodayDashboard(todayStr);
+      const res = await getTodayDashboard(targetDate);
       setData(res.summary);
     } catch (err) {
       setError(err.response?.data?.message || t('errorOccurred'));
@@ -53,8 +52,8 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchDashboard();
-  }, []);
+    fetchDashboard(selectedDate);
+  }, [selectedDate]);
 
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
@@ -63,7 +62,7 @@ const Dashboard = () => {
     try {
       setExpenseSubmitting(true);
       await createExpense({
-        date: todayStr,
+        date: selectedDate,
         category: expenseForm.category,
         amount: parseFloat(expenseForm.amount),
         note: expenseForm.note,
@@ -72,7 +71,7 @@ const Dashboard = () => {
       setToastMessage(t('expenseSavedSuccess'));
       setIsExpenseModalOpen(false);
       setExpenseForm({ category: 'vegetables', amount: '', note: '' });
-      fetchDashboard();
+      fetchDashboard(selectedDate);
     } catch (err) {
       alert(err.response?.data?.message || t('errorOccurred'));
     } finally {
@@ -95,17 +94,22 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Title Banner */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-orange-600/20">
+      {/* Interactive Title Banner with Date Selector */}
+      <div className="flex items-center justify-between bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-orange-600/20 flex-wrap gap-3">
         <div>
           <span className="text-xs uppercase tracking-wider text-orange-100 font-semibold">{t('todaysSummary')}</span>
-          <h2 className="text-2xl font-bold tracking-tight mt-0.5">{new Date().toLocaleDateString('gu-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</h2>
-          <p className="text-xs text-orange-100 mt-1">
+          <div className="flex items-center space-x-2 mt-1">
+            <Calendar className="w-5 h-5 text-amber-200" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-white/20 text-white font-bold text-lg rounded-xl px-2.5 py-1 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
+            />
+          </div>
+          <p className="text-xs text-orange-100 mt-2">
             {t('activeCustomers')}: <span className="font-bold text-white">{data?.activeCustomersCount || 0}</span>
           </p>
-        </div>
-        <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-          <Calendar className="w-6 h-6 text-white" />
         </div>
       </div>
 
