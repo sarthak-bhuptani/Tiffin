@@ -6,6 +6,10 @@ module.exports = async (req, res) => {
     await connectDB();
   } catch (err) {
     console.error('Serverless DB connection error:', err);
+    return res.status(500).json({
+      success: false,
+      message: `Database Connection Failed: ${err.message}. Please check Network Access (0.0.0.0/0) in MongoDB Atlas.`,
+    });
   }
   return app(req, res);
 };
