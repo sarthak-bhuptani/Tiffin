@@ -6,6 +6,7 @@ import { recordPayment } from '../services/paymentService';
 import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
+import CustomerCalendar from '../components/CustomerCalendar';
 
 import {
   ArrowLeft,
@@ -236,6 +237,9 @@ const CustomerDetail = () => {
           <span className="text-base font-bold text-rose-800">₹{stats.totalPending}</span>
         </div>
       </div>
+
+      {/* 31-Day Visual Tiffin Attendance Calendar */}
+      <CustomerCalendar tiffins={tiffins} />
 
       {/* Customer Tiffin History List */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
