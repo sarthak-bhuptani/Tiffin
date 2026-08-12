@@ -1,4 +1,4 @@
-# 🍱 Tiffin Business Manager (ટિફિન બિઝનેસ મેનેજર)
+# 🍱 Tiffin Business Manager
 
 [![Stack](https://img.shields.io/badge/Stack-MERN-orange.svg)](https://reactjs.org/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-emerald.svg)](https://vitejs.dev/)
