@@ -26,7 +26,18 @@ const createSingleTiffin = async (data) => {
     customerId = existingCustomer._id;
   }
 
-  const totalAmount = data.status === 'skipped' ? 0 : (data.totalAmount !== undefined ? data.totalAmount : (data.quantity || 1) * (data.unitPrice || 0));
+  let unitPrice = parseFloat(data.unitPrice);
+  if (isNaN(unitPrice) || unitPrice <= 0) {
+    if (customerId) {
+      const custObj = await Customer.findById(customerId);
+      unitPrice = custObj?.defaultPrice || 60;
+    } else {
+      unitPrice = 60;
+    }
+  }
+
+  const quantity = data.status === 'skipped' ? 0 : (parseFloat(data.quantity) || 1);
+  const totalAmount = data.status === 'skipped' ? 0 : (data.totalAmount && data.totalAmount > 0 ? data.totalAmount : quantity * unitPrice);
 
   let paidAmount = 0;
   if (data.paymentStatus === 'PAID') {
@@ -40,8 +51,8 @@ const createSingleTiffin = async (data) => {
     customerId,
     customerName: data.customerName,
     area: data.area || 'General',
-    quantity: data.status === 'skipped' ? 0 : data.quantity,
-    unitPrice: data.unitPrice,
+    quantity,
+    unitPrice,
     totalAmount,
     status: data.status || 'delivered',
     mealType: data.mealType || 'lunch',

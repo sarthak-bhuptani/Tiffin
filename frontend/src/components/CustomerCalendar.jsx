@@ -12,8 +12,8 @@ const CustomerCalendar = ({
   const { language } = useLanguage();
   const today = new Date();
 
-  const defaultLunchPrice = customer.defaultLunchPrice || customer.defaultPrice || 60;
-  const defaultDinnerPrice = customer.defaultDinnerPrice || 80;
+  const defaultLunchPrice = customer?.defaultLunchPrice || customer?.defaultPrice || 60;
+  const defaultDinnerPrice = customer?.defaultDinnerPrice || 80;
 
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
@@ -23,11 +23,20 @@ const CustomerCalendar = ({
   const [entryForm, setEntryForm] = useState({
     mealType: 'lunch',
     quantity: 1,
-    unitPrice: defaultLunchPrice,
+    unitPrice: 60,
     status: 'delivered',
     paymentStatus: 'PENDING',
     notes: '',
   });
+
+  React.useEffect(() => {
+    const activePrice = customer?.defaultPrice || customer?.defaultLunchPrice || 60;
+    setEntryForm((prev) => ({
+      ...prev,
+      unitPrice: activePrice,
+      quantity: customer?.defaultQuantity || 1,
+    }));
+  }, [customer]);
 
   const monthNamesGu = [
     'જાન્યુઆરી',
