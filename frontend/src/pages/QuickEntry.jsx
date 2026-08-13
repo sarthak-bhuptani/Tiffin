@@ -105,29 +105,8 @@ const QuickEntry = () => {
         }));
         setEntries(loadedEntries);
       } else {
-        // If selected date is TODAY, pre-fill regular customers for convenience;
-        // If selected date is any OTHER date with no saved data, show EMPTY list!
-        const todayStr = new Date().toISOString().split('T')[0];
-
-        if (selectedDate === todayStr) {
-          const freshEntries = customers.map((c) => ({
-            customerId: c._id,
-            customerName: c.name,
-            area: c.area || 'General',
-            quantity: c.defaultQuantity || 1,
-            unitPrice: c.defaultLunchPrice || c.defaultPrice || 60,
-            totalAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
-            status: 'delivered',
-            mealType: 'lunch',
-            skipReason: '',
-            paymentStatus: 'PAID',
-            paidAmount: (c.defaultQuantity || 1) * (c.defaultLunchPrice || c.defaultPrice || 60),
-            notes: '',
-          }));
-          setEntries(freshEntries);
-        } else {
-          setEntries([]); // Keep completely empty for other dates with no saved records!
-        }
+        // No saved entries for selected date: start with clean empty list as requested
+        setEntries([]);
       }
     } catch (err) {
       console.error('Error loading tiffins for date:', err);
