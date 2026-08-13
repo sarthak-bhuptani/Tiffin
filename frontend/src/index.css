@@ -4,38 +4,34 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    @apply bg-amber-50/40 text-slate-900 font-sans antialiased;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
 }
 
-/* Glassmorphism & UI Utilities */
+/* Glassmorphism & UI Utilities for Warm Sunset Theme */
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(254, 215, 170, 0.8);
 }
 
-.glass-card-emerald {
-  background: linear-gradient(135deg, rgba(236, 253, 245, 0.9) 0%, rgba(209, 250, 229, 0.7) 100%);
+.glass-card-orange {
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.95) 0%, rgba(254, 215, 170, 0.7) 100%);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(167, 243, 208, 0.8);
+  border: 1px solid rgba(253, 186, 116, 0.8);
 }
 
 .glass-card-amber {
-  background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.7) 100%);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(253, 230, 138, 0.7) 100%);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(252, 211, 77, 0.8);
 }
 
-.ambient-shadow {
-  box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.12);
-}
-
 .ambient-shadow-orange {
-  box-shadow: 0 10px 30px -10px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 10px 30px -10px rgba(234, 88, 12, 0.2);
 }
 
 /* Custom Scrollbar */
@@ -45,16 +41,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: #fff7ed;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #fed7aa;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #fb923c;
 }
 
 /* Printable Invoice CSS Rules */

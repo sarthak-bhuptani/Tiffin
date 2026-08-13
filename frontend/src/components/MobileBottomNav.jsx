@@ -15,7 +15,7 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-emerald-100/90 px-2 py-2 shadow-2xl max-w-4xl mx-auto notranslate" translate="no">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-orange-100/90 px-2 py-2 shadow-2xl max-w-4xl mx-auto notranslate" translate="no">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -27,8 +27,8 @@ const MobileBottomNav = () => {
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center py-1.5 px-2 flex-1 min-w-0 rounded-2xl transition-all duration-200 ${
                   isActive
-                    ? 'text-emerald-700 bg-emerald-100/80 font-extrabold shadow-xs scale-105'
-                    : 'text-slate-500 hover:text-slate-800 font-medium'
+                    ? 'text-orange-700 bg-orange-100/90 font-extrabold shadow-xs scale-105'
+                    : 'text-slate-500 hover:text-slate-800 font-semibold'
                 }`
               }
             >

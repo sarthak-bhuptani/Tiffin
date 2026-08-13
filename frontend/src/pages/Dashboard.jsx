@@ -22,7 +22,6 @@ import {
   Calendar,
   Volume2,
   VolumeX,
-  MessageCircle,
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
@@ -147,17 +146,17 @@ const Dashboard = () => {
       )}
 
       {/* Hero Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-emerald-700/20 space-y-3">
+      <div className="bg-gradient-to-r from-orange-600 via-amber-600 to-amber-500 rounded-3xl p-5 text-white shadow-lg shadow-orange-600/25 space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <div className="flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-100">
+              <Sparkles className="w-4 h-4 text-amber-200" />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-amber-100">
                 {t('businessName') || "Mom's Special Tiffin Service"}
               </span>
             </div>
             <div className="flex items-center space-x-2 mt-1">
-              <Calendar className="w-5 h-5 text-amber-200 shrink-0" />
+              <Calendar className="w-5 h-5 text-amber-100 shrink-0" />
               <input
                 type="date"
                 value={selectedDate}
@@ -183,7 +182,7 @@ const Dashboard = () => {
           </button>
         </div>
 
-        <div className="pt-1 border-t border-white/20 flex items-center justify-between text-xs text-emerald-100">
+        <div className="pt-1 border-t border-white/20 flex items-center justify-between text-xs text-amber-100">
           <span>{t('activeCustomers')}: <strong className="text-white font-extrabold">{data?.activeCustomersCount || 0} ગ્રાહકો</strong></span>
           <span>આજના આપેલ: <strong className="text-amber-200 font-extrabold">{data?.deliveredCount || 0} ટિફિન</strong></span>
         </div>
@@ -197,18 +196,18 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          {/* 🌟 3 Big Action Cards for Mother */}
+          {/* 🌟 4 Big Action Cards for Mother */}
           <div className="space-y-3">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 px-1">
               {isGu ? 'મુખ્ય કામગીરી (Daily Action Cards)' : 'Primary Action Cards'}
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Card 1: Daily Entry */}
               <button
                 type="button"
                 onClick={() => navigate('/tiffins/quick')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-4 rounded-3xl bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
@@ -218,19 +217,19 @@ const Dashboard = () => {
                     <h4 className="font-extrabold text-sm leading-tight">
                       {isGu ? '1. આજની ટિફિન હાજરી' : '1. Today\'s Attendance'}
                     </h4>
-                    <p className="text-[11px] text-emerald-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-amber-100 font-semibold mt-0.5">
                       {isGu ? 'આજના ટિફિન આપ્યા / રજા નોંધો' : 'Log delivered vs skipped tiffins'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-emerald-200 shrink-0" />
+                <ArrowRight className="w-5 h-5 text-amber-200 shrink-0" />
               </button>
 
               {/* Card 2: View Today's List */}
               <button
                 type="button"
                 onClick={() => navigate('/tiffins/list')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-4 rounded-3xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
@@ -240,12 +239,12 @@ const Dashboard = () => {
                     <h4 className="font-extrabold text-sm leading-tight">
                       {isGu ? '2. આજનું લિસ્ટ જુઓ' : "2. View Today's List"}
                     </h4>
-                    <p className="text-[11px] text-blue-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-amber-100 font-semibold mt-0.5">
                       {data.deliveredCount} {isGu ? 'આપ્યા' : 'delivered'} • {data.skippedCount} {isGu ? 'રજા' : 'skipped'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-blue-200 shrink-0" />
+                <ArrowRight className="w-5 h-5 text-amber-200 shrink-0" />
               </button>
 
               {/* Card 3: Pending Dues & WhatsApp */}
@@ -274,7 +273,7 @@ const Dashboard = () => {
               <button
                 type="button"
                 onClick={() => navigate('/accounts')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-4 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
@@ -284,12 +283,12 @@ const Dashboard = () => {
                     <h4 className="font-extrabold text-sm leading-tight">
                       {isGu ? '4. રોકડા / UPI પૈસા જમા કરો' : '4. Record Payment'}
                     </h4>
-                    <p className="text-[11px] text-amber-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-emerald-100 font-semibold mt-0.5">
                       {isGu ? 'ગ્રાહકના પૈસા ખાતામાં ઉમેરો' : 'Add cash/UPI payments'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-amber-200 shrink-0" />
+                <ArrowRight className="w-5 h-5 text-emerald-200 shrink-0" />
               </button>
             </div>
           </div>
@@ -301,7 +300,7 @@ const Dashboard = () => {
               value={data.todayTiffins}
               subtext={`${t('delivered')}: ${data.deliveredCount} | ${t('skipped')}: ${data.skippedCount}`}
               icon={Utensils}
-              color="emerald"
+              color="orange"
               onClick={() => navigate('/tiffins/list')}
             />
 
@@ -310,7 +309,7 @@ const Dashboard = () => {
               value={`₹${data.billedIncome}`}
               subtext={`${t('collectedIncome')}: ₹${data.collectedIncome}`}
               icon={IndianRupee}
-              color="emerald"
+              color="amber"
             />
 
             <StatCard
@@ -344,7 +343,7 @@ const Dashboard = () => {
               value={data.activeCustomersCount}
               subtext={t('customers')}
               icon={Users}
-              color="emerald"
+              color="orange"
               onClick={() => navigate('/customers')}
             />
           </div>
@@ -353,7 +352,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-2 pt-1">
             <button
               onClick={() => setIsExpenseModalOpen(true)}
-              className="py-3 px-3 rounded-2xl bg-white border border-slate-200 hover:border-rose-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
+              className="py-3 px-3 rounded-2xl bg-white border border-orange-200 hover:border-orange-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
             >
               <Plus className="w-4 h-4 text-rose-600 shrink-0" />
               <span>+ {t('addExpense')}</span>
@@ -361,9 +360,9 @@ const Dashboard = () => {
 
             <button
               onClick={() => navigate('/customers')}
-              className="py-3 px-3 rounded-2xl bg-white border border-slate-200 hover:border-emerald-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
+              className="py-3 px-3 rounded-2xl bg-white border border-orange-200 hover:border-orange-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
             >
-              <Users className="w-4 h-4 text-emerald-600 shrink-0" />
+              <Users className="w-4 h-4 text-orange-600 shrink-0" />
               <span>+ {t('addNewCustomer')}</span>
             </button>
           </div>
@@ -372,7 +371,7 @@ const Dashboard = () => {
 
       {/* Add Expense Modal */}
       <Modal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)} title={t('addExpense')}>
-        <form onSubmit={handleExpenseSubmit} className="space-y-4">
+        <form onSubmit={handleExpenseSubmit} className="space-y-4 font-sans">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">{t('expenseCategory')}</label>
             <select
