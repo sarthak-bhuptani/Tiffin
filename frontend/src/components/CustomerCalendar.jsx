@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2, XCircle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 
 const CustomerCalendar = ({ tiffins = [] }) => {
+  const { language } = useLanguage();
   const today = new Date();
+
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [selectedDayDetail, setSelectedDayDetail] = useState(null);
@@ -37,7 +40,12 @@ const CustomerCalendar = ({ tiffins = [] }) => {
     'December',
   ];
 
-  const weekDays = ['રવિ', 'સોમ', 'મંગળ', 'બુધ', 'ગુરુ', 'શુક્ર', 'શનિ'];
+  const monthNames = language === 'gu' ? monthNamesGu : monthNamesEn;
+
+  const weekDays =
+    language === 'gu'
+      ? ['રવિ', 'સોમ', 'મંગળ', 'બુધ', 'ગુરુ', 'શુક્ર', 'શનિ']
+      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Navigate Months
   const handlePrevMonth = () => {
@@ -73,7 +81,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
   });
 
   return (
-    <div className="bg-white rounded-3xl p-4 sm:p-5 border border-orange-100 shadow-xs space-y-4">
+    <div className="bg-white rounded-3xl p-4 sm:p-5 border border-orange-100 shadow-xs space-y-4 notranslate" translate="no">
       {/* Calendar Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -81,10 +89,10 @@ const CustomerCalendar = ({ tiffins = [] }) => {
             <CalendarIcon className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900 leading-tight">
-              {monthNamesGu[selectedMonth]} {selectedYear} ({monthNamesEn[selectedMonth]})
+            <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
+              {monthNames[selectedMonth]} {selectedYear}
             </h3>
-            <p className="text-[11px] text-slate-500 font-medium">દૈનિક હાજરી કેલેન્ડર (Monthly Tiffin Calendar)</p>
+            <p className="text-[11px] text-slate-500 font-medium">Monthly Tiffin Calendar</p>
           </div>
         </div>
 
@@ -93,7 +101,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
           <button
             type="button"
             onClick={handlePrevMonth}
-            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition active:scale-95"
             title="Previous Month"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -102,7 +110,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
           <button
             type="button"
             onClick={handleNextMonth}
-            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition active:scale-95"
             title="Next Month"
           >
             <ChevronRight className="w-4 h-4" />
@@ -115,7 +123,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
         {weekDays.map((day, idx) => (
           <span
             key={idx}
-            className={`text-xs font-bold ${idx === 0 ? 'text-rose-500' : 'text-slate-500'}`}
+            className={`text-xs font-extrabold ${idx === 0 ? 'text-rose-500' : 'text-slate-600'}`}
           >
             {day}
           </span>
@@ -160,7 +168,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
               key={`day-${dayNum}`}
               onClick={() => setSelectedDayDetail(tiffinRecord ? { dateStr, tiffinRecord } : { dateStr, tiffinRecord: null })}
               className={`h-11 rounded-xl border p-1 flex flex-col items-center justify-between cursor-pointer transition relative ${bgClass} ${
-                isToday ? 'ring-2 ring-orange-500' : ''
+                isToday ? 'ring-2 ring-orange-500 font-extrabold' : ''
               }`}
             >
               <div className="flex items-center justify-between w-full px-1">
@@ -174,7 +182,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
                 </span>
               ) : tiffinRecord && tiffinRecord.status === 'skipped' ? (
                 <span className="text-[9px] font-bold text-amber-700 leading-none pb-0.5">
-                  બંધ
+                  {language === 'gu' ? 'બંધ' : 'Skip'}
                 </span>
               ) : (
                 <span className="text-[9px] text-slate-300 leading-none pb-0.5">-</span>
@@ -201,7 +209,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
             <div className="flex items-center justify-between pt-1">
               <div>
                 <span className="font-bold text-slate-800">
-                  {selectedDayDetail.tiffinRecord.status === 'delivered' ? '✓ આપેલ (Delivered)' : '✕ બંધ (Skipped)'}
+                  {selectedDayDetail.tiffinRecord.status === 'delivered' ? '✓ Delivered' : '✕ Skipped'}
                 </span>
                 <p className="text-slate-500">
                   {selectedDayDetail.tiffinRecord.quantity} Tiffin • ₹{selectedDayDetail.tiffinRecord.totalAmount} ({selectedDayDetail.tiffinRecord.mealType || 'lunch'})
@@ -218,7 +226,7 @@ const CustomerCalendar = ({ tiffins = [] }) => {
               </span>
             </div>
           ) : (
-            <p className="text-slate-500 pt-0.5">આ તારીખે કોઈ એન્ટ્રી નોંધાયેલ નથી. (No record for this date)</p>
+            <p className="text-slate-500 pt-0.5">No record for this date</p>
           )}
         </div>
       )}
@@ -227,17 +235,17 @@ const CustomerCalendar = ({ tiffins = [] }) => {
       <div className="flex items-center justify-around pt-2 border-t border-slate-100 text-[11px] font-semibold text-slate-600">
         <div className="flex items-center space-x-1.5">
           <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-          <span>આપેલ (Delivered)</span>
+          <span>Delivered</span>
         </div>
 
         <div className="flex items-center space-x-1.5">
           <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-          <span>બંધ (Skipped)</span>
+          <span>Skipped</span>
         </div>
 
         <div className="flex items-center space-x-1.5">
           <span className="w-3 h-3 rounded-full bg-slate-200"></span>
-          <span>કોઈ નોંધ નહીં</span>
+          <span>No record</span>
         </div>
       </div>
     </div>
