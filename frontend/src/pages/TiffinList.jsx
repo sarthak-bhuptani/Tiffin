@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { getTiffins, updateTiffin, deleteTiffin } from '../services/tiffinService';
+import { getLocalTodayStr } from '../utils/dateUtils';
 import { Utensils, Calendar, Search, Filter, CheckCircle2, XCircle, Trash2, IndianRupee } from 'lucide-react';
 
 const TiffinList = () => {
   const { t } = useLanguage();
 
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalTodayStr());
   const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
 

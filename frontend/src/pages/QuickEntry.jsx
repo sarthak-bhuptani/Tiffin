@@ -8,6 +8,8 @@ import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 
+import { getLocalTodayStr } from '../utils/dateUtils';
+
 import {
   BookOpen,
   Plus,
@@ -26,7 +28,7 @@ const QuickEntry = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalTodayStr());
   const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);

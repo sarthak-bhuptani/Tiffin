@@ -6,6 +6,8 @@ import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
 import { createExpense } from '../services/expenseService';
 
+import { getLocalTodayStr } from '../utils/dateUtils';
+
 import {
   Utensils,
   Plus,
@@ -24,7 +26,7 @@ const Dashboard = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => getLocalTodayStr());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
