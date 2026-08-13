@@ -222,6 +222,60 @@ const deleteTiffin = async (id) => {
   return tiffin;
 };
 
+const createRangeTiffinsForCustomer = async (data) => {
+  const { customerId, customerName, area, startDate, endDate, quantity, unitPrice, mealType, paymentStatus } = data;
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const createdEntries = [];
+
+  const curr = new Date(start);
+  while (curr <= end) {
+    const dateStr = curr.toISOString().split('T')[0];
+
+    let existing = null;
+    if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
+      existing = await DailyTiffin.findOne({ customerId, date: dateStr });
+    } else {
+      existing = await DailyTiffin.findOne({ customerName, date: dateStr });
+    }
+
+    const totalAmount = (quantity || 1) * (unitPrice || 0);
+    const paidAmount = paymentStatus === 'PAID' ? totalAmount : 0;
+
+    if (existing) {
+      existing.quantity = quantity || 1;
+      existing.unitPrice = unitPrice || 60;
+      existing.totalAmount = totalAmount;
+      existing.status = 'delivered';
+      existing.paymentStatus = paymentStatus || 'PENDING';
+      existing.paidAmount = paidAmount;
+      existing.mealType = mealType || 'lunch';
+      await existing.save();
+      createdEntries.push(existing);
+    } else {
+      const newTiffin = await DailyTiffin.create({
+        date: dateStr,
+        customerId: sanitizeCustomerId(customerId),
+        customerName,
+        area: area || 'General',
+        quantity: quantity || 1,
+        unitPrice: unitPrice || 60,
+        totalAmount,
+        status: 'delivered',
+        mealType: mealType || 'lunch',
+        paymentStatus: paymentStatus || 'PENDING',
+        paidAmount,
+      });
+      createdEntries.push(newTiffin);
+    }
+
+    curr.setDate(curr.getDate() + 1);
+  }
+
+  return createdEntries;
+};
+
 module.exports = {
   createSingleTiffin,
   createBulkTiffins,
@@ -229,4 +283,5 @@ module.exports = {
   getTiffinById,
   updateTiffin,
   deleteTiffin,
+  createRangeTiffinsForCustomer,
 };

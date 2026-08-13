@@ -66,6 +66,15 @@ const deleteTiffin = async (req, res, next) => {
   }
 };
 
+const createRangeTiffins = async (req, res, next) => {
+  try {
+    const result = await tiffinService.createRangeTiffinsForCustomer(req.body);
+    return sendSuccess(res, 201, 'Range tiffins created successfully', { entries: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSingleTiffin,
   createBulkTiffins,
@@ -74,4 +83,5 @@ module.exports = {
   getTiffinById,
   updateTiffin,
   deleteTiffin,
+  createRangeTiffins,
 };

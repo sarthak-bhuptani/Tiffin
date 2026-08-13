@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomerById, deleteCustomer } from '../services/customerService';
 import { recordPayment } from '../services/paymentService';
+import { createRangeTiffins } from '../services/tiffinService';
 import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
@@ -18,6 +19,7 @@ import {
   MessageCircle,
   Share2,
   Receipt,
+  CalendarRange,
 } from 'lucide-react';
 
 const CustomerDetail = () => {
@@ -49,6 +51,18 @@ const CustomerDetail = () => {
   // Delete Confirmation Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  // Multi-Day Range Entry Modal State
+  const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
+  const [rangeForm, setRangeForm] = useState({
+    startDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`,
+    endDate: new Date().toISOString().split('T')[0],
+    quantity: 1,
+    unitPrice: 60,
+    mealType: 'lunch',
+    paymentStatus: 'PENDING',
+  });
+  const [rangeSubmitting, setRangeSubmitting] = useState(false);
+
   const fetchCustomerDetails = async () => {
     try {
       setLoading(true);
@@ -58,6 +72,13 @@ const CustomerDetail = () => {
         setPaymentForm((prev) => ({
           ...prev,
           amount: res.stats.totalPending || '',
+        }));
+      }
+      if (res.customer) {
+        setRangeForm((prev) => ({
+          ...prev,
+          quantity: res.customer.defaultQuantity || 1,
+          unitPrice: res.customer.defaultPrice || 60,
         }));
       }
     } catch (err) {
@@ -103,6 +124,29 @@ const CustomerDetail = () => {
       setTimeout(() => navigate('/customers'), 1000);
     } catch (err) {
       alert(err.response?.data?.message || t('errorOccurred'));
+    }
+  };
+
+  const handleRangeSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setRangeSubmitting(true);
+      await createRangeTiffins({
+        customerId: id,
+        customerName: data.customer.name,
+        area: data.customer.area,
+        ...rangeForm,
+        quantity: parseFloat(rangeForm.quantity),
+        unitPrice: parseFloat(rangeForm.unitPrice),
+      });
+
+      setIsRangeModalOpen(false);
+      setToastMessage('✅ તમામ દિવસોની ટિફિન એન્ટ્રીઓ જમા થઈ ગઈ!');
+      fetchCustomerDetails();
+    } catch (err) {
+      alert(err.response?.data?.message || t('errorOccurred'));
+    } finally {
+      setRangeSubmitting(false);
     }
   };
 
@@ -178,7 +222,7 @@ const CustomerDetail = () => {
           className="flex items-center space-x-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>પાછા જાઓ (Back to Customers)</span>
+          <span>પાછા જાઓ (Back)</span>
         </button>
 
         <button
@@ -186,7 +230,7 @@ const CustomerDetail = () => {
           className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition active:scale-95"
         >
           <Trash2 className="w-3.5 h-3.5" />
-          <span>ડીલીટ કરો (Delete Customer)</span>
+          <span>ડીલીટ કરો</span>
         </button>
       </div>
 
@@ -214,37 +258,48 @@ const CustomerDetail = () => {
             </div>
           </div>
 
-        {/* Action Buttons Row */}
-        <div className="grid grid-cols-3 gap-2 w-full pt-1">
-          <button
-            onClick={() => setIsInvoiceModalOpen(true)}
-            className="py-2.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
-          >
-            <Receipt className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">🧾 બિલ PDF</span>
-          </button>
+          {/* Action Buttons Grid */}
+          <div className="grid grid-cols-4 gap-1.5 w-full pt-1">
+            <button
+              onClick={() => setIsInvoiceModalOpen(true)}
+              className="py-2.5 px-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+            >
+              <Receipt className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">🧾 બિલ PDF</span>
+            </button>
 
-          <button
-            onClick={() => setIsWhatsAppModalOpen(true)}
-            className="py-2.5 px-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
-          >
-            <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">💬 WhatsApp</span>
-          </button>
+            <button
+              onClick={() => setIsWhatsAppModalOpen(true)}
+              className="py-2.5 px-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+            >
+              <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">💬 WhatsApp</span>
+            </button>
 
-          <button
-            onClick={() => setIsPaymentModalOpen(true)}
-            className="py-2.5 px-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
-          >
-            <Plus className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">જમા કરો</span>
-          </button>
-        </div>
+            <button
+              onClick={() => setIsRangeModalOpen(true)}
+              className="py-2.5 px-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+              title="બહુવિધ દિવસોની એન્ટ્રીઓ કરો"
+            >
+              <CalendarRange className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">📅 13 દિવસ</span>
+            </button>
+
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="py-2.5 px-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">જમા કરો</span>
+            </button>
+          </div>
         </div>
 
         {/* Plan summary badge */}
         <div className="p-2.5 rounded-xl bg-orange-50/60 text-xs font-medium text-orange-800 flex items-center justify-between">
-          <span>{t('defaultPrice')}: {customer.defaultQuantity} × ₹{customer.defaultPrice} ({customer.planType})</span>
+          <span>
+            {t('defaultPrice')}: {customer.defaultQuantity} × ₹{customer.defaultPrice} ({customer.planType})
+          </span>
           {customer.notes && <span className="italic text-slate-500 text-[11px]">"{customer.notes}"</span>}
         </div>
       </div>
@@ -326,6 +381,100 @@ const CustomerDetail = () => {
           </div>
         )}
       </div>
+
+      {/* 📅 Multi-Day Range Entry Modal */}
+      <Modal isOpen={isRangeModalOpen} onClose={() => setIsRangeModalOpen(false)} title="📅 એકસાથે બહુવિધ દિવસોની એન્ટ્રી (Bulk Date Range)">
+        <form onSubmit={handleRangeSubmit} className="space-y-4">
+          <div className="bg-orange-50 p-3 rounded-2xl border border-orange-200 text-xs text-orange-900 font-medium">
+            💡 <strong>ઉદાહરણ:</strong> તારીખ 1 થી તારીખ 13 સુધીની તમામ 13 દિવસની એન્ટ્રીઓ એક સાથે જમા કરો!
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">ક્યારથી (Start Date)</label>
+              <input
+                type="date"
+                required
+                value={rangeForm.startDate}
+                onChange={(e) => setRangeForm({ ...rangeForm, startDate: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">ક્યાં સુધી (End Date)</label>
+              <input
+                type="date"
+                required
+                value={rangeForm.endDate}
+                onChange={(e) => setRangeForm({ ...rangeForm, endDate: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">દૈનિક ટિફિન નંગ</label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={rangeForm.quantity}
+                onChange={(e) => setRangeForm({ ...rangeForm, quantity: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">ભાવ (₹ / ટિફિન)</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={rangeForm.unitPrice}
+                onChange={(e) => setRangeForm({ ...rangeForm, unitPrice: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">મેનૂ ટાઇપ</label>
+              <select
+                value={rangeForm.mealType}
+                onChange={(e) => setRangeForm({ ...rangeForm, mealType: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-none"
+              >
+                <option value="lunch">☀️ બપોર (Lunch)</option>
+                <option value="dinner">🌙 સાંજ (Dinner)</option>
+                <option value="both">🍱 બંને (Both)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">ચુકવણી સ્થિતિ</label>
+              <select
+                value={rangeForm.paymentStatus}
+                onChange={(e) => setRangeForm({ ...rangeForm, paymentStatus: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-none"
+              >
+                <option value="PENDING">🔴 બાકી (Pending)</option>
+                <option value="PAID">🟢 જમા (Paid)</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={rangeSubmitting}
+            className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-md shadow-orange-600/30 transition active:scale-98"
+          >
+            {rangeSubmitting ? 'એન્ટ્રીઓ થઈ રહી છે...' : '📅 તમામ દિવસોની એન્ટ્રીઓ જમા કરો'}
+          </button>
+        </form>
+      </Modal>
 
       {/* Digital Bill Invoice Receipt Modal */}
       <InvoiceModal

@@ -29,3 +29,8 @@ export const deleteTiffin = async (id) => {
   const res = await API.delete(`/tiffins/${id}`);
   return res.data;
 };
+
+export const createRangeTiffins = async (payload) => {
+  const res = await API.post('/tiffins/range', payload);
+  return res.data.data.entries;
+};
