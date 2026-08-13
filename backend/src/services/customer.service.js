@@ -8,21 +8,28 @@ const createCustomer = async (customerData) => {
   return customer;
 };
 
-const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegex = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
 const getCustomers = async (query = {}) => {
   const filter = {};
-  if (query.active !== undefined) {
+  if (query.active !== undefined && query.active !== '' && query.active !== 'all') {
     filter.active = query.active === 'true' || query.active === true;
   }
-  if (query.area) {
-    const safeArea = escapeRegex(query.area);
-    filter.area = new RegExp(safeArea, 'i');
+  if (query.area && typeof query.area === 'string' && query.area.trim() !== '') {
+    const safeArea = escapeRegex(query.area.trim());
+    if (safeArea) {
+      filter.area = new RegExp(safeArea, 'i');
+    }
   }
-  if (query.search) {
-    const safeSearch = escapeRegex(query.search);
-    const searchRegex = new RegExp(safeSearch, 'i');
-    filter.$or = [{ name: searchRegex }, { area: searchRegex }, { phone: searchRegex }];
+  if (query.search && typeof query.search === 'string' && query.search.trim() !== '') {
+    const safeSearch = escapeRegex(query.search.trim());
+    if (safeSearch) {
+      const searchRegex = new RegExp(safeSearch, 'i');
+      filter.$or = [{ name: searchRegex }, { area: searchRegex }, { phone: searchRegex }];
+    }
   }
 
   const customers = await Customer.find(filter).sort({ name: 1 });

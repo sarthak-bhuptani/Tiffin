@@ -24,8 +24,8 @@ const errorHandler = (err, req, res, next) => {
   }
 
   logger.error(`[${req.method}] ${req.originalUrl} - ${statusCode} - ${message}`);
-  if (statusCode === 500 && process.env.NODE_ENV !== 'production') {
-    console.error(err.stack);
+  if (statusCode === 500) {
+    console.error('Unhandled 500 Server Error:', err);
   }
 
   return res.status(statusCode).json({
