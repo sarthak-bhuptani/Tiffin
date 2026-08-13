@@ -12,6 +12,9 @@ const CustomerCalendar = ({
   const { language } = useLanguage();
   const today = new Date();
 
+  const defaultLunchPrice = customer.defaultLunchPrice || customer.defaultPrice || 60;
+  const defaultDinnerPrice = customer.defaultDinnerPrice || 80;
+
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [activeDateModal, setActiveDateModal] = useState(null); // dateStr string
@@ -20,7 +23,7 @@ const CustomerCalendar = ({
   const [entryForm, setEntryForm] = useState({
     mealType: 'lunch',
     quantity: 1,
-    unitPrice: customer.defaultPrice || 60,
+    unitPrice: defaultLunchPrice,
     status: 'delivered',
     paymentStatus: 'PENDING',
     notes: '',
@@ -102,11 +105,26 @@ const CustomerCalendar = ({
     setEntryForm({
       mealType: 'lunch',
       quantity: customer.defaultQuantity || 1,
-      unitPrice: customer.defaultPrice || 60,
+      unitPrice: defaultLunchPrice,
       status: 'delivered',
       paymentStatus: 'PENDING',
       notes: '',
     });
+  };
+
+  const handleMealTypeChange = (newMealType) => {
+    let autoPrice = defaultLunchPrice;
+    if (newMealType === 'dinner') {
+      autoPrice = defaultDinnerPrice;
+    } else if (newMealType === 'both') {
+      autoPrice = defaultLunchPrice + defaultDinnerPrice;
+    }
+
+    setEntryForm((prev) => ({
+      ...prev,
+      mealType: newMealType,
+      unitPrice: autoPrice,
+    }));
   };
 
   const handleAddEntryForDate = async (e) => {
@@ -121,14 +139,12 @@ const CustomerCalendar = ({
         paymentStatus: entryForm.paymentStatus,
         notes: entryForm.notes,
       });
-      setEntryForm({
+      // Switch default to next meal or reset
+      setEntryForm((prev) => ({
+        ...prev,
         mealType: 'dinner',
-        quantity: 1,
-        unitPrice: customer.defaultPrice || 60,
-        status: 'delivered',
-        paymentStatus: 'PENDING',
-        notes: '',
-      });
+        unitPrice: defaultDinnerPrice,
+      }));
     }
   };
 
@@ -150,7 +166,7 @@ const CustomerCalendar = ({
             <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
               {monthNames[selectedMonth]} {selectedYear}
             </h3>
-            <p className="text-[11px] text-slate-500 font-medium">કોઈપણ તારીખ પર ક્લિક કરીને Lunch / Dinner એન્ટ્રીઓ કરો</p>
+            <p className="text-[11px] text-slate-500 font-medium">કોઈપણ તારીખ પર ક્લિક કરીને બપોર / સાંજની એન્ટ્રીઓ કરો</p>
           </div>
         </div>
 
@@ -265,14 +281,14 @@ const CustomerCalendar = ({
         })}
       </div>
 
-      {/* Date Tiffin Manager Modal */}
+      {/* Date Tiffin Manager Modal with Auto-Price Selector */}
       {activeDateModal && (
         <Modal
           isOpen={Boolean(activeDateModal)}
           onClose={() => setActiveDateModal(null)}
           title={`📅 ${activeDateModal} - ટિફિન મેનેજર`}
         >
-          <div className="space-y-4">
+          <div className="space-y-4 font-sans">
             {/* Existing Entries List for this Date */}
             <div>
               <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">
@@ -303,7 +319,7 @@ const CustomerCalendar = ({
                             {item.mealType === 'lunch' ? '☀️ બપોર (Lunch)' : item.mealType === 'dinner' ? '🌙 સાંજ (Dinner)' : '🍱 બંને (Both)'}
                           </span>
                           <p className="text-slate-600 font-medium mt-0.5">
-                            {item.quantity} ટિફિન × ₹{item.unitPrice} = <strong className="text-emerald-700">₹{item.totalAmount}</strong>
+                            {item.quantity} ટિફિન × ₹{item.unitPrice} = <strong className="text-emerald-700 font-extrabold">₹{item.totalAmount}</strong>
                           </p>
                         </div>
                       </div>
@@ -311,7 +327,7 @@ const CustomerCalendar = ({
                       <button
                         type="button"
                         onClick={() => handleDeleteEntry(item._id)}
-                        className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition"
+                        className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition active:scale-95"
                         title="ડીલીટ કરો"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -333,12 +349,12 @@ const CustomerCalendar = ({
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">મેનૂ સમય (Meal)</label>
                   <select
                     value={entryForm.mealType}
-                    onChange={(e) => setEntryForm({ ...entryForm, mealType: e.target.value })}
-                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-none"
+                    onChange={(e) => handleMealTypeChange(e.target.value)}
+                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-extrabold bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
-                    <option value="lunch">☀️ બપોર (Lunch)</option>
-                    <option value="dinner">🌙 સાંજ (Dinner)</option>
-                    <option value="both">🍱 બંને (Both)</option>
+                    <option value="lunch">☀️ બપોર - Lunch (₹{defaultLunchPrice})</option>
+                    <option value="dinner">🌙 સાંજ - Dinner (₹{defaultDinnerPrice})</option>
+                    <option value="both">🍱 બંને - Both (₹{defaultLunchPrice + defaultDinnerPrice})</option>
                   </select>
                 </div>
 
@@ -350,7 +366,7 @@ const CustomerCalendar = ({
                     min="1"
                     value={entryForm.quantity}
                     onChange={(e) => setEntryForm({ ...entryForm, quantity: e.target.value })}
-                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none"
+                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-extrabold focus:outline-none"
                   />
                 </div>
               </div>
@@ -358,16 +374,15 @@ const CustomerCalendar = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">ભાવ (₹ / Tiffin)</label>
-                  <select
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    placeholder="e.g. 60 or 80 or 70"
                     value={entryForm.unitPrice}
                     onChange={(e) => setEntryForm({ ...entryForm, unitPrice: e.target.value })}
-                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-white focus:outline-none"
-                  >
-                    <option value="60">₹60 (Standard)</option>
-                    <option value="70">₹70 (Medium)</option>
-                    <option value="80">₹80 (Special Dinner)</option>
-                    <option value="100">₹100 (Full Special)</option>
-                  </select>
+                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-extrabold bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
                 </div>
 
                 <div>
