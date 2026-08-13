@@ -198,33 +198,32 @@ const CustomerDetail = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 flex-wrap gap-1">
-            {/* Digital Invoice PDF Button */}
-            <button
-              onClick={() => setIsInvoiceModalOpen(true)}
-              className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition active:scale-98"
-            >
-              <Receipt className="w-4 h-4" />
-              <span>🧾 રસીદ / PDF</span>
-            </button>
+        {/* Action Buttons Row */}
+        <div className="grid grid-cols-3 gap-2 w-full pt-1">
+          <button
+            onClick={() => setIsInvoiceModalOpen(true)}
+            className="py-2.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+          >
+            <Receipt className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">🧾 બિલ PDF</span>
+          </button>
 
-            {/* 1-Tap WhatsApp Bill Button */}
-            <button
-              onClick={() => setIsWhatsAppModalOpen(true)}
-              className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/30 transition active:scale-98"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>💬 WhatsApp બિલ</span>
-            </button>
+          <button
+            onClick={() => setIsWhatsAppModalOpen(true)}
+            className="py-2.5 px-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+          >
+            <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">💬 WhatsApp</span>
+          </button>
 
-            <button
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="flex items-center space-x-1 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-700/20 transition active:scale-98"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{t('recordPayment')}</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsPaymentModalOpen(true)}
+            className="py-2.5 px-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">જમા કરો</span>
+          </button>
+        </div>
         </div>
 
         {/* Plan summary badge */}
