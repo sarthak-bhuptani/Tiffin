@@ -214,7 +214,8 @@ const CustomerDetail = () => {
         `💰 Total Billed: *₹${stats.totalBilled}*\n` +
         `✅ Total Paid: *₹${stats.totalPaid}*\n` +
         `🔴 Pending Balance: *₹${stats.totalPending}*\n\n` +
-        `📱 You can pay via GPay / PhonePe / UPI.\n` +
+        `📱 Pay via GPay/PhonePe UPI ID: *9913408222@upi*\n` +
+        (stats.totalPending > 0 ? `📲 1-Tap Pay Link: upi://pay?pa=9913408222@upi&pn=TiffinService&am=${stats.totalPending}&cu=INR\n\n` : '\n') +
         `Thank you! 🍱✨`
       );
     }
@@ -228,7 +229,8 @@ const CustomerDetail = () => {
       `💰 કુલ હિસાબ: *₹${stats.totalBilled}*\n` +
       `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
       `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n\n` +
-      `📱 GPay / PhonePe / UPI દ્વારા ચુકવણી કરી શકો છો.\n` +
+      `📱 GPay / PhonePe UPI ID: *9913408222@upi*\n` +
+      (stats.totalPending > 0 ? `📲 direct 1-Tap પેમેન્ટ લિંક: upi://pay?pa=9913408222@upi&pn=TiffinService&am=${stats.totalPending}&cu=INR\n\n` : '\n') +
       `ધન્યવાદ! 🍱✨`
     );
   };

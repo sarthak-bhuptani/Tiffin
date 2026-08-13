@@ -106,7 +106,8 @@ const Customers = () => {
         `Tiffin Account Summary for ${todayStrEn}:\n` +
         `🍱 Tiffin Plan: *${cust.defaultQuantity} pcs (₹${cust.defaultPrice}/tiffin)*\n` +
         `📍 Delivery Area: *${cust.area}*\n\n` +
-        `📱 You can pay via GPay / PhonePe / UPI.\n` +
+        `📱 Pay via GPay/PhonePe UPI ID: *9913408222@upi*\n` +
+        `📲 1-Tap Pay Link: upi://pay?pa=9913408222@upi&pn=TiffinService&cu=INR\n\n` +
         `Thank you! 🍱✨`
       );
     }
@@ -117,7 +118,8 @@ const Customers = () => {
       `આ મહિનાનો (${todayStrGu}) ટિફિનનો હિસાબ:\n` +
       `🍱 ટિફિન પ્લાન: *${cust.defaultQuantity} નંગ (₹${cust.defaultPrice}/ટિફિન)*\n` +
       `📍 એરિયા: *${cust.area}*\n\n` +
-      `📱 GPay / PhonePe / UPI દ્વારા ચુકવણી કરી શકો છો.\n` +
+      `📱 GPay / PhonePe UPI ID: *9913408222@upi*\n` +
+      `📲 direct 1-Tap પેમેન્ટ લિંક: upi://pay?pa=9913408222@upi&pn=TiffinService&cu=INR\n\n` +
       `ધન્યવાદ! 🍱✨`
     );
   };
