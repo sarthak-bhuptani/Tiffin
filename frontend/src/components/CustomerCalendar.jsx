@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Check, X, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Check, X, Trash2, Utensils } from 'lucide-react';
 
 const CustomerCalendar = ({ tiffins = [], defaultPrice = 60, defaultQuantity = 1, onSaveDayEntry }) => {
   const { language } = useLanguage();
@@ -80,9 +80,9 @@ const CustomerCalendar = ({ tiffins = [], defaultPrice = 60, defaultQuantity = 1
     }
   });
 
-  const handleQuickStatusChange = async (dateStr, status) => {
+  const handleQuickStatusChange = async (dateStr, status, customQty = defaultQuantity) => {
     if (onSaveDayEntry) {
-      await onSaveDayEntry(dateStr, status, defaultQuantity, defaultPrice);
+      await onSaveDayEntry(dateStr, status, customQty, defaultPrice);
       setSelectedDayDetail(null);
     }
   };
@@ -185,7 +185,7 @@ const CustomerCalendar = ({ tiffins = [], defaultPrice = 60, defaultQuantity = 1
 
               {tiffinRecord && tiffinRecord.status === 'delivered' ? (
                 <span className="text-[10px] font-bold text-emerald-700 leading-none pb-0.5">
-                  ₹{tiffinRecord.totalAmount}
+                  {tiffinRecord.quantity > 1 ? `${tiffinRecord.quantity}x ` : ''}₹{tiffinRecord.totalAmount}
                 </span>
               ) : tiffinRecord && tiffinRecord.status === 'skipped' ? (
                 <span className="text-[9px] font-bold text-amber-700 leading-none pb-0.5">
@@ -199,7 +199,7 @@ const CustomerCalendar = ({ tiffins = [], defaultPrice = 60, defaultQuantity = 1
         })}
       </div>
 
-      {/* Selected Day Interactive Quick Action Card */}
+      {/* Selected Day Interactive Quick Action Card with 1 vs 2 Tiffin Toggles */}
       {selectedDayDetail && (
         <div className="p-3.5 rounded-2xl bg-orange-50/90 border border-orange-200 text-xs space-y-2.5 animate-in fade-in shadow-xs">
           <div className="flex items-center justify-between">
@@ -213,36 +213,45 @@ const CustomerCalendar = ({ tiffins = [], defaultPrice = 60, defaultQuantity = 1
           </div>
 
           <p className="text-[11px] text-slate-600 font-medium">
-            આ તારીખ માટે નીચેનામાંથી વિકલ્પ પસંદ કરો:
+            આ તારીખ માટે ટિફિનની સંખ્યા પસંદ કરો (1 ટિફિન કે 2 ટિફિન):
           </p>
 
           {/* Quick Action Toggles */}
-          <div className="grid grid-cols-3 gap-1.5 pt-1">
+          <div className="grid grid-cols-4 gap-1.5 pt-1">
             <button
               type="button"
-              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'delivered')}
-              className="py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'delivered', 1)}
+              className="py-2 px-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-xs flex flex-col items-center justify-center space-y-0.5 transition active:scale-95"
             >
-              <Check className="w-3.5 h-3.5" />
-              <span>✓ આપ્યું (Delivered)</span>
+              <span>✓ 1 ટિફિન</span>
+              <span className="text-[9px] opacity-80">(₹{defaultPrice})</span>
             </button>
 
             <button
               type="button"
-              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'skipped')}
-              className="py-2 px-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
+              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'delivered', 2)}
+              className="py-2 px-1 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold text-xs shadow-xs flex flex-col items-center justify-center space-y-0.5 transition active:scale-95"
             >
-              <X className="w-3.5 h-3.5" />
-              <span>✕ રજા (Skipped)</span>
+              <span>🍱 2 ટિફિન</span>
+              <span className="text-[9px] opacity-80">(₹{defaultPrice * 2})</span>
             </button>
 
             <button
               type="button"
-              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'delete')}
-              className="py-2 px-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex items-center justify-center space-x-1 transition active:scale-95"
+              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'skipped', 0)}
+              className="py-2 px-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs flex flex-col items-center justify-center space-y-0.5 transition active:scale-95"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>કાઢી નાખો</span>
+              <span>✕ રજા</span>
+              <span className="text-[9px] opacity-80">(₹0)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickStatusChange(selectedDayDetail.dateStr, 'delete', 0)}
+              className="py-2 px-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex flex-col items-center justify-center space-y-0.5 transition active:scale-95"
+            >
+              <span><Trash2 className="w-3.5 h-3.5 mx-auto" /></span>
+              <span className="text-[9px]">કાઢી નાખો</span>
             </button>
           </div>
         </div>
