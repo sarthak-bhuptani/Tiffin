@@ -271,7 +271,10 @@ const Customers = () => {
       {/* WhatsApp Modal */}
       <Modal isOpen={Boolean(whatsAppCustomer)} onClose={() => setWhatsAppCustomer(null)} title="💬 WhatsApp મેસેજ">
         <div className="space-y-4">
-          <div className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 font-sans text-xs text-slate-800 whitespace-pre-line leading-relaxed shadow-xs">
+          <div
+            className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 font-sans text-xs text-slate-800 whitespace-pre-line leading-relaxed shadow-xs notranslate"
+            translate="no"
+          >
             {getWhatsAppMessage(whatsAppCustomer)}
           </div>
 
