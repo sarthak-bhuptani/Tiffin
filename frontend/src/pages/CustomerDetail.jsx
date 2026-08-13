@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 import CustomerCalendar from '../components/CustomerCalendar';
+import InvoiceModal from '../components/InvoiceModal';
 
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
   Trash2,
   MessageCircle,
   Share2,
+  Receipt,
 } from 'lucide-react';
 
 const CustomerDetail = () => {
@@ -39,6 +41,9 @@ const CustomerDetail = () => {
 
   // WhatsApp Bill Modal State
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+
+  // Digital Invoice Receipt Modal State
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   // Delete Confirmation Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -193,7 +198,16 @@ const CustomerDetail = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-wrap gap-1">
+            {/* Digital Invoice PDF Button */}
+            <button
+              onClick={() => setIsInvoiceModalOpen(true)}
+              className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition active:scale-98"
+            >
+              <Receipt className="w-4 h-4" />
+              <span>🧾 રસીદ / PDF</span>
+            </button>
+
             {/* 1-Tap WhatsApp Bill Button */}
             <button
               onClick={() => setIsWhatsAppModalOpen(true)}
@@ -290,6 +304,15 @@ const CustomerDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Digital Bill Invoice Receipt Modal */}
+      <InvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        customer={customer}
+        stats={stats}
+        tiffins={tiffins}
+      />
 
       {/* WhatsApp Bill Preview Modal */}
       <Modal isOpen={isWhatsAppModalOpen} onClose={() => setIsWhatsAppModalOpen(false)} title="💬 WhatsApp બિલ મેસેજ">
