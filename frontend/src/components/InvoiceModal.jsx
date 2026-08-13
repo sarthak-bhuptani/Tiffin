@@ -5,7 +5,7 @@ import { Printer, Share2, Upload, Download, Loader2 } from 'lucide-react';
 
 const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
   const { t, language } = useLanguage();
-  const [upiId, setUpiId] = useState('9913408222@upi');
+  const [upiId, setUpiId] = useState('7436059291@upi');
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [customQrImg, setCustomQrImg] = useState(() => {
     return localStorage.getItem('tiffin_custom_qr_code') || '';
