@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Utensils, Globe, Sparkles } from 'lucide-react';
+import { Utensils, Globe, Calendar } from 'lucide-react';
 
 const Navbar = () => {
   const { lang, toggleLang, t } = useLanguage();
@@ -30,7 +30,7 @@ const Navbar = () => {
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" title="Live Online"></span>
             </div>
             <p className="text-[11px] text-orange-700 font-semibold flex items-center space-x-1">
-              <Sparkles className="w-3 h-3 text-amber-500 inline shrink-0" />
+              <Calendar className="w-3 h-3 text-orange-600 inline shrink-0" />
               <span>{todayDisplayStr}</span>
             </p>
           </div>

@@ -150,7 +150,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <div className="flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4 text-amber-200" />
+              <Sun className="w-4 h-4 text-amber-200" />
               <span className="text-xs font-extrabold uppercase tracking-wider text-amber-100">
                 {t('businessName') || "Mom's Special Tiffin Service"}
               </span>
