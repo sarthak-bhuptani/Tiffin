@@ -2,8 +2,15 @@ const DailyTiffin = require('../models/dailyTiffin.model');
 const Customer = require('../models/customer.model');
 const AppError = require('../utils/appError');
 
+const sanitizeCustomerId = (id) => {
+  if (!id || id === 'null' || id === 'undefined' || !mongoose.Types.ObjectId.isValid(id)) {
+    return null;
+  }
+  return id;
+};
+
 const createSingleTiffin = async (data) => {
-  let customerId = data.customerId || null;
+  let customerId = sanitizeCustomerId(data.customerId);
 
   // If saveAsRegular flag is set and customerId is not provided, check or create customer
   if (data.saveAsRegular && !customerId) {
@@ -67,7 +74,7 @@ const createBulkTiffins = async (date, entries, deletedIds = []) => {
 
     const tiffinData = {
       date,
-      customerId: entry.customerId || null,
+      customerId: sanitizeCustomerId(entry.customerId),
       customerName: entry.customerName,
       area: entry.area || 'General',
       quantity: entry.status === 'skipped' ? 0 : (entry.quantity || 1),
