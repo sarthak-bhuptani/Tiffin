@@ -352,9 +352,9 @@ const CustomerCalendar = ({
                     onChange={(e) => handleMealTypeChange(e.target.value)}
                     className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-extrabold bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
-                    <option value="lunch">☀️ બપોર - Lunch (₹{defaultLunchPrice})</option>
-                    <option value="dinner">🌙 સાંજ - Dinner (₹{defaultDinnerPrice})</option>
-                    <option value="both">🍱 બંને - Both (₹{defaultLunchPrice + defaultDinnerPrice})</option>
+                    <option value="lunch">☀️ બપોર (Lunch)</option>
+                    <option value="dinner">🌙 સાંજ (Dinner)</option>
+                    <option value="both">🍱 બંને (Both)</option>
                   </select>
                 </div>
 
