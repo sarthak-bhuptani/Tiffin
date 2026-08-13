@@ -99,13 +99,27 @@ const Customers = () => {
 
   const getWhatsAppMessage = (cust) => {
     if (!cust) return '';
-    const todayStr = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
+
+    if (messageLang === 'en') {
+      const todayStrEn = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return (
+        `Hello ${cust.name} Ji! 🙏\n\n` +
+        `Tiffin Account Summary for ${todayStrEn}:\n` +
+        `🍱 Tiffin Plan: *${cust.defaultQuantity} pcs (₹${cust.defaultPrice}/tiffin)*\n` +
+        `📍 Delivery Area: *${cust.area}*\n\n` +
+        `📱 You can pay via GPay / PhonePe / UPI.\n` +
+        `Thank you! 🍱✨`
+      );
+    }
+
+    const todayStrGu = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
     return (
-      `આ મહિનાનો (${todayStr}) ટિફિનનો હિસાબ:\n` +
+      `નમસ્તે ${cust.name} જી! 🙏\n\n` +
+      `આ મહિનાનો (${todayStrGu}) ટિફિનનો હિસાબ:\n` +
       `🍱 ટિફિન પ્લાન: *${cust.defaultQuantity} નંગ (₹${cust.defaultPrice}/ટિફિન)*\n` +
       `📍 એરિયા: *${cust.area}*\n\n` +
       `📱 GPay / PhonePe / UPI દ્વારા ચુકવણી કરી શકો છો.\n` +
-      `Thank YOu! 🍱✨`
+      `ધન્યવાદ! 🍱✨`
     );
   };
 
@@ -271,6 +285,32 @@ const Customers = () => {
       {/* WhatsApp Modal */}
       <Modal isOpen={Boolean(whatsAppCustomer)} onClose={() => setWhatsAppCustomer(null)} title="💬 WhatsApp મેસેજ">
         <div className="space-y-4">
+          {/* Language Toggle Pills */}
+          <div className="flex items-center justify-between bg-slate-100 p-1 rounded-2xl gap-1">
+            <button
+              type="button"
+              onClick={() => setMessageLang('gu')}
+              className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition active:scale-95 ${
+                messageLang === 'gu'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🇮🇳 ગુજરાતી (Gujarati)
+            </button>
+            <button
+              type="button"
+              onClick={() => setMessageLang('en')}
+              className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition active:scale-95 ${
+                messageLang === 'en'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🇬🇧 English
+            </button>
+          </div>
+
           <div
             className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 font-sans text-xs text-slate-800 whitespace-pre-line leading-relaxed shadow-xs notranslate"
             translate="no"

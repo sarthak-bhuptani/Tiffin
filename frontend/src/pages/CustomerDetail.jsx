@@ -39,8 +39,9 @@ const CustomerDetail = () => {
   });
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
 
-  // WhatsApp Bill Modal State
+  // WhatsApp Bill Modal State & Language
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [messageLang, setMessageLang] = useState('gu'); // 'gu' | 'en'
 
   // Digital Invoice Receipt Modal State
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -105,15 +106,30 @@ const CustomerDetail = () => {
     }
   };
 
-  // Generate Gujarati WhatsApp Bill Message
+  // Generate Gujarati & English WhatsApp Bill Message
   const getWhatsAppBillMessage = () => {
     if (!data || !data.customer || !data.stats) return '';
     const { customer, stats } = data;
-    const todayStr = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
 
+    if (messageLang === 'en') {
+      const todayStrEn = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return (
+        `Hello ${customer.name} Ji! 🙏\n\n` +
+        `Tiffin Account Summary for ${todayStrEn}:\n` +
+        `🍱 Tiffins Delivered: *${stats.deliveredCount} pcs*\n` +
+        `💵 Rate: *₹${customer.defaultPrice}/tiffin*\n` +
+        `💰 Total Billed: *₹${stats.totalBilled}*\n` +
+        `✅ Total Paid: *₹${stats.totalPaid}*\n` +
+        `🔴 Pending Balance: *₹${stats.totalPending}*\n\n` +
+        `📱 You can pay via GPay / PhonePe / UPI.\n` +
+        `Thank you! 🍱✨`
+      );
+    }
+
+    const todayStrGu = new Date().toLocaleDateString('gu-IN', { month: 'long', year: 'numeric' });
     return (
       `નમસ્તે ${customer.name} જી! 🙏\n\n` +
-      `આ મહિનાનો (${todayStr}) ટિફિનનો હિસાબ:\n` +
+      `આ મહિનાનો (${todayStrGu}) ટિફિનનો હિસાબ:\n` +
       `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
       `💵 ટિફિન ભાવ: *₹${customer.defaultPrice}/ટિફિન*\n` +
       `💰 કુલ હિસાબ: *₹${stats.totalBilled}*\n` +
@@ -323,6 +339,32 @@ const CustomerDetail = () => {
       {/* WhatsApp Bill Preview Modal */}
       <Modal isOpen={isWhatsAppModalOpen} onClose={() => setIsWhatsAppModalOpen(false)} title="💬 WhatsApp બિલ મેસેજ">
         <div className="space-y-4">
+          {/* Language Toggle Pills */}
+          <div className="flex items-center justify-between bg-slate-100 p-1 rounded-2xl gap-1">
+            <button
+              type="button"
+              onClick={() => setMessageLang('gu')}
+              className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition active:scale-95 ${
+                messageLang === 'gu'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🇮🇳 ગુજરાતી (Gujarati)
+            </button>
+            <button
+              type="button"
+              onClick={() => setMessageLang('en')}
+              className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition active:scale-95 ${
+                messageLang === 'en'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🇬🇧 English
+            </button>
+          </div>
+
           <div
             className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 font-sans text-xs text-slate-800 whitespace-pre-line leading-relaxed shadow-xs notranslate"
             translate="no"
