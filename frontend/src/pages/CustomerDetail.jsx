@@ -279,10 +279,10 @@ const CustomerDetail = () => {
             <button
               onClick={() => setIsRangeModalOpen(true)}
               className="py-2.5 px-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs flex items-center justify-center space-x-1 transition active:scale-95"
-              title="બહુવિધ દિવસોની એન્ટ્રીઓ કરો"
+              title="તારીખ રેન્જ પસંદ કરીને એકસાથે એન્ટ્રીઓ કરો"
             >
               <CalendarRange className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">📅 13 દિવસ</span>
+              <span className="truncate">📅 તારીખ રેન્જ</span>
             </button>
 
             <button
@@ -330,7 +330,38 @@ const CustomerDetail = () => {
       </div>
 
       {/* 31-Day Visual Tiffin Attendance Calendar */}
-      <CustomerCalendar tiffins={tiffins} />
+      <CustomerCalendar
+        tiffins={tiffins}
+        defaultPrice={customer.defaultPrice}
+        defaultQuantity={customer.defaultQuantity}
+        onSaveDayEntry={async (dateStr, status, quantity, unitPrice) => {
+          try {
+            if (status === 'delete') {
+              const existing = tiffins.find((t) => t.date === dateStr);
+              if (existing) {
+                const { deleteTiffin } = await import('../services/tiffinService');
+                await deleteTiffin(existing._id);
+              }
+            } else {
+              const { createSingleTiffin } = await import('../services/tiffinService');
+              await createSingleTiffin({
+                date: dateStr,
+                customerId: id,
+                customerName: customer.name,
+                area: customer.area,
+                quantity,
+                unitPrice,
+                status,
+                paymentStatus: 'PENDING',
+              });
+            }
+            setToastMessage('✅ તારીખની એન્ટ્રી અપડેટ થઈ ગઈ!');
+            fetchCustomerDetails();
+          } catch (err) {
+            alert(err.response?.data?.message || t('errorOccurred'));
+          }
+        }}
+      />
 
       {/* Customer Tiffin History List */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
