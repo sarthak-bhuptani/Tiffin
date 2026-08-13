@@ -81,7 +81,8 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
         `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
         `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n` +
         `-----------------------------\n` +
-        `📱 GPay / PhonePe UPI ID: *${upiId}*\n\n` +
+        `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
+        (stats.totalPending > 0 ? `📲 direct 1-Tap પેમેન્ટ લિંક: upi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n` : '\n') +
         `ધન્યવાદ! 🍱✨`
       : `Hello ${customer.name} Ji! 🙏\n\n` +
         `Monthly Invoice Bill for ${monthStr}:\n` +
@@ -92,7 +93,8 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
         `✅ Amount Paid: *₹${stats.totalPaid}*\n` +
         `🔴 Pending Dues: *₹${stats.totalPending}*\n` +
         `-----------------------------\n` +
-        `📱 GPay / PhonePe UPI ID: *${upiId}*\n\n` +
+        `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
+        (stats.totalPending > 0 ? `📲 1-Tap Pay Link: upi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n` : '\n') +
         `Thank you! 🍱✨`;
 
     const rawPhone = customer.phone || '';
