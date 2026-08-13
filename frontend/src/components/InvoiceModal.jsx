@@ -68,55 +68,85 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
     }
   };
 
-  const handleSendWhatsAppInvoice = () => {
-    const text = isGu
-      ? `🍱 *મોમ્સ સ્પેશિયલ ટિફિન સર્વિસ*\n` +
-        `----------------------------------\n` +
-        `🧾 *માસિક હિસાબ બિલ રસીદ (${monthStr})*\n\n` +
-        `👤 ગ્રાહકનું નામ: *${customer.name}*\n` +
-        `📍 વિસ્તાર: *${customer.area}*\n` +
-        (customer.phone ? `📱 મોબાઇલ: *${customer.phone}*\n` : '') +
-        `----------------------------------\n` +
-        `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
-        `💵 દર: *₹${customer.defaultPrice}/ટિફિન*\n` +
-        `💰 કુલ હિસાબ: *₹${stats.totalBilled}*\n` +
-        `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
-        `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n` +
-        `----------------------------------\n\n` +
-        `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
-        (stats.totalPending > 0
-          ? `📲 direct 1-Tap પેમેન્ટ લિંક:\nupi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n`
-          : '\n') +
-        `આપના સાથ સહકાર બદલ ધન્યવાદ! 🍱✨`
-      : `🍱 *Mom's Special Tiffin Service*\n` +
-        `----------------------------------\n` +
-        `🧾 *Monthly Invoice Bill (${monthStr})*\n\n` +
-        `👤 Customer Name: *${customer.name}*\n` +
-        `📍 Area: *${customer.area}*\n` +
-        (customer.phone ? `📱 Phone: *${customer.phone}*\n` : '') +
-        `----------------------------------\n` +
-        `🍱 Tiffins Delivered: *${stats.deliveredCount} pcs*\n` +
-        `💵 Rate: *₹${customer.defaultPrice}/tiffin*\n` +
-        `💰 Total Billed: *₹${stats.totalBilled}*\n` +
-        `✅ Amount Paid: *₹${stats.totalPaid}*\n` +
-        `🔴 Pending Dues: *₹${stats.totalPending}*\n` +
-        `----------------------------------\n\n` +
-        `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
-        (stats.totalPending > 0
-          ? `📲 1-Tap Direct Pay Link:\nupi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n`
-          : '\n') +
-        `Thank you for your business! 🍱✨`;
+  // Direct PDF File Sharing Handler for WhatsApp & Native Share
+  const handleSharePdfInvoice = async () => {
+    const element = document.getElementById('printable-invoice');
+    if (!element) return;
 
-    const rawPhone = customer.phone || '';
-    const cleanPhone = rawPhone.replace(/\D/g, '');
-    let url = '';
-    if (cleanPhone.length >= 10) {
-      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-      url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`;
-    } else {
-      url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    try {
+      setIsDownloadingPdf(true);
+      const safeName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `Moms_Special_Tiffin_Bill_${safeName}.pdf`;
+
+      const opt = {
+        margin: [5, 5, 5, 5],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+
+      // Generate PDF Blob
+      const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      const textSummary = isGu
+        ? `🍱 *મોમ્સ સ્પેશિયલ ટિફિન સર્વિસ*\n` +
+          `----------------------------------\n` +
+          `🧾 *${customer.name} જી નો માસિક હિસાબ બિલ PDF (${monthStr})*\n\n` +
+          `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
+          `💰 કુલ હિસાબ: *₹${stats.totalBilled}*\n` +
+          `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
+          `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n` +
+          `----------------------------------\n` +
+          `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
+          (stats.totalPending > 0
+            ? `📲 direct 1-Tap પેમેન્ટ લિંક:\nupi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n`
+            : '\n') +
+          `આપના સાથ સહકાર બદલ ધન્યવાદ! 🍱✨`
+        : `🍱 *Mom's Special Tiffin Service*\n` +
+          `----------------------------------\n` +
+          `🧾 *Monthly Invoice Bill PDF for ${customer.name} (${monthStr})*\n\n` +
+          `🍱 Tiffins Delivered: *${stats.deliveredCount} pcs*\n` +
+          `💰 Total Billed: *₹${stats.totalBilled}*\n` +
+          `✅ Amount Paid: *₹${stats.totalPaid}*\n` +
+          `🔴 Pending Dues: *₹${stats.totalPending}*\n` +
+          `----------------------------------\n` +
+          `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
+          (stats.totalPending > 0
+            ? `📲 1-Tap Direct Pay Link:\nupi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n`
+            : '\n') +
+          `Thank you for your business! 🍱✨`;
+
+      // Check if Web Share API supports file sharing
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        await navigator.share({
+          files: [pdfFile],
+          title: `Tiffin Bill PDF - ${customer.name}`,
+          text: textSummary,
+        });
+      } else {
+        // Fallback: Save PDF file and launch WhatsApp chat
+        await html2pdf().set(opt).from(element).save();
+
+        const rawPhone = customer.phone || '';
+        const cleanPhone = rawPhone.replace(/\D/g, '');
+        let url = '';
+        if (cleanPhone.length >= 10) {
+          const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+          url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(textSummary)}`;
+        } else {
+          url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textSummary)}`;
+        }
+        window.open(url, '_blank');
+      }
+    } catch (err) {
+      console.error('PDF Share Error:', err);
+      // Ultimate Fallback
+      await html2pdf().set(opt).from(element).save();
+    } finally {
+      setIsDownloadingPdf(false);
     }
-    window.open(url, '_blank');
   };
 
   const generatedQrCodeImg = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
@@ -285,11 +315,16 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
 
           <button
             type="button"
-            onClick={handleSendWhatsAppInvoice}
-            className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1 shadow-md shadow-emerald-600/30 transition active:scale-95"
+            disabled={isDownloadingPdf}
+            onClick={handleSharePdfInvoice}
+            className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1 shadow-md shadow-emerald-600/30 transition active:scale-95 disabled:opacity-50"
           >
-            <Share2 className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{isGu ? '💬 WhatsApp' : '💬 Send'}</span>
+            {isDownloadingPdf ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Share2 className="w-3.5 h-3.5 shrink-0" />
+            )}
+            <span className="truncate">{isGu ? '💬 Send PDF' : '💬 Send PDF'}</span>
           </button>
         </div>
       </div>
