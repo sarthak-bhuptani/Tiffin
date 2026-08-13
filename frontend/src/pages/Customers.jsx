@@ -20,9 +20,8 @@ const Customers = () => {
 
   // WhatsApp modal state
   const [whatsAppCustomer, setWhatsAppCustomer] = useState(null);
-
-  // Delete modal state
   const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [messageLang, setMessageLang] = useState('gu'); // 'gu' | 'en'
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
