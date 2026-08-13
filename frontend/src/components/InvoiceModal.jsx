@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Modal from './Modal';
 import { useLanguage } from '../context/LanguageContext';
 import { Printer, Share2, Upload, Download, Loader2 } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 
 const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
   const { t, language } = useLanguage();
@@ -49,15 +50,12 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
 
     try {
       setIsDownloadingPdf(true);
-      const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = html2pdfModule.default || html2pdfModule;
-
       const safeName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [5, 5, 5, 5],
         filename: `Moms_Special_Tiffin_Bill_${safeName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       };
 
@@ -72,30 +70,42 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
 
   const handleSendWhatsAppInvoice = () => {
     const text = isGu
-      ? `નમસ્તે ${customer.name} જી! 🙏\n\n` +
-        `આ આપનું માસિક રસીદ બિલ છે (${monthStr}):\n` +
-        `-----------------------------\n` +
+      ? `🍱 *મોમ્સ સ્પેશિયલ ટિફિન સર્વિસ*\n` +
+        `----------------------------------\n` +
+        `🧾 *માસિક હિસાબ બિલ રસીદ (${monthStr})*\n\n` +
+        `👤 ગ્રાહકનું નામ: *${customer.name}*\n` +
+        `📍 વિસ્તાર: *${customer.area}*\n` +
+        (customer.phone ? `📱 મોબાઇલ: *${customer.phone}*\n` : '') +
+        `----------------------------------\n` +
         `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
         `💵 દર: *₹${customer.defaultPrice}/ટિફિન*\n` +
-        `💰 કુલ રકમ: *₹${stats.totalBilled}*\n` +
+        `💰 કુલ હિસાબ: *₹${stats.totalBilled}*\n` +
         `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
         `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n` +
-        `-----------------------------\n` +
+        `----------------------------------\n\n` +
         `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
-        (stats.totalPending > 0 ? `📲 direct 1-Tap પેમેન્ટ લિંક: upi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n` : '\n') +
-        `ધન્યવાદ! 🍱✨`
-      : `Hello ${customer.name} Ji! 🙏\n\n` +
-        `Monthly Invoice Bill for ${monthStr}:\n` +
-        `-----------------------------\n` +
+        (stats.totalPending > 0
+          ? `📲 direct 1-Tap પેમેન્ટ લિંક:\nupi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n`
+          : '\n') +
+        `આપના સાથ સહકાર બદલ ધન્યવાદ! 🍱✨`
+      : `🍱 *Mom's Special Tiffin Service*\n` +
+        `----------------------------------\n` +
+        `🧾 *Monthly Invoice Bill (${monthStr})*\n\n` +
+        `👤 Customer Name: *${customer.name}*\n` +
+        `📍 Area: *${customer.area}*\n` +
+        (customer.phone ? `📱 Phone: *${customer.phone}*\n` : '') +
+        `----------------------------------\n` +
         `🍱 Tiffins Delivered: *${stats.deliveredCount} pcs*\n` +
         `💵 Rate: *₹${customer.defaultPrice}/tiffin*\n` +
         `💰 Total Billed: *₹${stats.totalBilled}*\n` +
         `✅ Amount Paid: *₹${stats.totalPaid}*\n` +
         `🔴 Pending Dues: *₹${stats.totalPending}*\n` +
-        `-----------------------------\n` +
+        `----------------------------------\n\n` +
         `📱 GPay / PhonePe UPI ID: *${upiId}*\n` +
-        (stats.totalPending > 0 ? `📲 1-Tap Pay Link: upi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n` : '\n') +
-        `Thank you! 🍱✨`;
+        (stats.totalPending > 0
+          ? `📲 1-Tap Direct Pay Link:\nupi://pay?pa=${upiId}&pn=MomsSpecialTiffinService&am=${stats.totalPending}&cu=INR\n\n`
+          : '\n') +
+        `Thank you for your business! 🍱✨`;
 
     const rawPhone = customer.phone || '';
     const cleanPhone = rawPhone.replace(/\D/g, '');
