@@ -352,17 +352,17 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-2 pt-1">
             <button
               onClick={() => setIsExpenseModalOpen(true)}
-              className="py-3 px-3 rounded-2xl bg-white border border-orange-200 hover:border-orange-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
+              className="py-3 px-3 rounded-2xl bg-red-600 border border-orange-200 hover:border-orange-300 text-white font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
             >
-              <Plus className="w-4 h-4 text-rose-600 shrink-0" />
+              <Plus className="w-4 h-4 text-white shrink-0" />
               <span>+ {t('addExpense')}</span>
             </button>
 
             <button
               onClick={() => navigate('/customers')}
-              className="py-3 px-3 rounded-2xl bg-white border border-orange-200 hover:border-orange-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
+              className="py-3 px-3 rounded-2xl bg-green-600 border border-orange-200 hover:border-orange-300 text-white font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
             >
-              <Users className="w-4 h-4 text-orange-600 shrink-0" />
+              <Users className="w-4 h-4 text-white shrink-0" />
               <span>+ {t('addNewCustomer')}</span>
             </button>
           </div>
