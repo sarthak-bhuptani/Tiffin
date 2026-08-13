@@ -23,7 +23,7 @@ import {
   Volume2,
   VolumeX,
   Sparkles,
-  ArrowRight,
+  ChevronRight,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -196,7 +196,7 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          {/* 🌟 4 Big Action Cards for Mother */}
+          {/* Simple Clean Action Cards for Mother */}
           <div className="space-y-3">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 px-1">
               {isGu ? 'મુખ્ય કામગીરી (Daily Action Cards)' : 'Primary Action Cards'}
@@ -207,88 +207,88 @@ const Dashboard = () => {
               <button
                 type="button"
                 onClick={() => navigate('/tiffins/quick')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-3.5 rounded-3xl bg-white border border-orange-200 text-slate-900 shadow-xs flex items-center justify-between transition active:scale-98 text-left hover:border-orange-400 hover:shadow-md"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                  <div className="w-11 h-11 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl font-bold shrink-0">
                     🍱
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm leading-tight">
+                    <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
                       {isGu ? '1. આજની ટિફિન હાજરી' : '1. Today\'s Attendance'}
                     </h4>
-                    <p className="text-[11px] text-amber-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
                       {isGu ? 'આજના ટિફિન આપ્યા / રજા નોંધો' : 'Log delivered vs skipped tiffins'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-amber-200 shrink-0" />
+                <ChevronRight className="w-5 h-5 text-orange-400 shrink-0" />
               </button>
 
               {/* Card 2: View Today's List */}
               <button
                 type="button"
                 onClick={() => navigate('/tiffins/list')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-3.5 rounded-3xl bg-white border border-amber-200 text-slate-900 shadow-xs flex items-center justify-between transition active:scale-98 text-left hover:border-amber-400 hover:shadow-md"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold shrink-0">
                     📋
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm leading-tight">
+                    <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
                       {isGu ? '2. આજનું લિસ્ટ જુઓ' : "2. View Today's List"}
                     </h4>
-                    <p className="text-[11px] text-amber-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-amber-700 font-bold mt-0.5">
                       {data.deliveredCount} {isGu ? 'આપ્યા' : 'delivered'} • {data.skippedCount} {isGu ? 'રજા' : 'skipped'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-amber-200 shrink-0" />
+                <ChevronRight className="w-5 h-5 text-amber-400 shrink-0" />
               </button>
 
               {/* Card 3: Pending Dues & WhatsApp */}
               <button
                 type="button"
                 onClick={() => navigate('/accounts')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-md shadow-rose-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-3.5 rounded-3xl bg-white border border-rose-200 text-slate-900 shadow-xs flex items-center justify-between transition active:scale-98 text-left hover:border-rose-400 hover:shadow-md"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                  <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl font-bold shrink-0">
                     🔴
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm leading-tight">
+                    <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
                       {isGu ? '3. બાકી પૈસા ઉઘરાણી' : '3. Pending Dues & WhatsApp'}
                     </h4>
-                    <p className="text-[11px] text-rose-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-rose-600 font-bold mt-0.5">
                       ₹{data.pendingPaymentsTotal} {isGu ? 'બાકી • 1-Tap WhatsApp બિલ' : 'pending'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-rose-200 shrink-0" />
+                <ChevronRight className="w-5 h-5 text-rose-400 shrink-0" />
               </button>
 
               {/* Card 4: Record Payment */}
               <button
                 type="button"
                 onClick={() => navigate('/accounts')}
-                className="p-4 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+                className="p-3.5 rounded-3xl bg-white border border-emerald-200 text-slate-900 shadow-xs flex items-center justify-between transition active:scale-98 text-left hover:border-emerald-400 hover:shadow-md"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold shrink-0">
                     🟢
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm leading-tight">
+                    <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
                       {isGu ? '4. રોકડા / UPI પૈસા જમા કરો' : '4. Record Payment'}
                     </h4>
-                    <p className="text-[11px] text-emerald-100 font-semibold mt-0.5">
+                    <p className="text-[11px] text-emerald-700 font-bold mt-0.5">
                       {isGu ? 'ગ્રાહકના પૈસા ખાતામાં ઉમેરો' : 'Add cash/UPI payments'}
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-emerald-200 shrink-0" />
+                <ChevronRight className="w-5 h-5 text-emerald-400 shrink-0" />
               </button>
             </div>
           </div>
