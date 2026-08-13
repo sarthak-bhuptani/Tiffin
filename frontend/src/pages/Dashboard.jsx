@@ -5,7 +5,6 @@ import { getTodayDashboard } from '../services/reportService';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
 import { createExpense } from '../services/expenseService';
-
 import { getLocalTodayStr } from '../utils/dateUtils';
 
 import {
@@ -20,6 +19,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Calendar,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -30,6 +31,7 @@ const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Add Expense Modal state
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -56,6 +58,46 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboard(selectedDate);
   }, [selectedDate]);
+
+  // Clean up speech synthesis when component unmounts
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const handleSpeakSummary = () => {
+    if (!('speechSynthesis' in window)) {
+      alert('આ ફોનમાં આવાજ ફીચર સપોર્ટ કરતું નથી.');
+      return;
+    }
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const totalTiffins = data?.todayTiffins || 0;
+    const income = data?.billedIncome || 0;
+    const collected = data?.collectedIncome || 0;
+    const pending = data?.pendingPaymentsTotal || 0;
+
+    const script = `નમસ્તે! આજે કુલ ${totalTiffins} ટિફિન ગયા છે. ${income} રૂપિયાની આવક થઈ છે, જેમાં ${collected} રૂપિયા જમા થયા છે, અને કુલ ${pending} રૂપિયા બાકી નીકળે છે. ધન્યવાદ!`;
+
+    const utterance = new SpeechSynthesisUtterance(script);
+    utterance.lang = 'gu-IN';
+    utterance.rate = 0.88;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    setIsSpeaking(true);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
@@ -96,7 +138,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Interactive Title Banner with Date Selector */}
+      {/* Interactive Title Banner with Date Selector & Gujarati Audio Assistant */}
       <div className="flex items-center justify-between bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-orange-600/20 flex-wrap gap-3">
         <div>
           <span className="text-xs uppercase tracking-wider text-orange-100 font-semibold">{t('todaysSummary')}</span>
@@ -113,6 +155,20 @@ const Dashboard = () => {
             {t('activeCustomers')}: <span className="font-bold text-white">{data?.activeCustomersCount || 0}</span>
           </p>
         </div>
+
+        {/* 🔊 Gujarati Voice Audio Summary Speaker Button */}
+        <button
+          onClick={handleSpeakSummary}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-md transition active:scale-95 ${
+            isSpeaking
+              ? 'bg-rose-500 text-white animate-pulse'
+              : 'bg-white/20 hover:bg-white/30 text-white border border-white/30'
+          }`}
+          title="આવાજથી હિસાબ સાંભળો"
+        >
+          {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-200" />}
+          <span>{isSpeaking ? 'બંધ કરો (Stop)' : '🔊 હિસાબ સાંભળો'}</span>
+        </button>
       </div>
 
       {loading ? (
