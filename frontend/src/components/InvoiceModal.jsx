@@ -112,8 +112,17 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
                 <span className="text-emerald-700 font-semibold">જમા રકમ (Paid): ₹{stats.totalPaid}</span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-rose-600 uppercase block">બાકી નીકળતી રકમ (Pending)</span>
-                <span className="text-lg font-extrabold text-rose-700">₹{stats.totalPending}</span>
+                {stats.totalPaid > stats.totalBilled ? (
+                  <>
+                    <span className="text-[10px] font-extrabold text-emerald-700 uppercase block">🟢 એડવાન્સ જમા (Advance)</span>
+                    <span className="text-lg font-extrabold text-emerald-800">+₹{stats.totalPaid - stats.totalBilled}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] font-bold text-rose-600 uppercase block">બાકી નીકળતી રકમ (Pending)</span>
+                    <span className="text-lg font-extrabold text-rose-700">₹{stats.totalPending}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

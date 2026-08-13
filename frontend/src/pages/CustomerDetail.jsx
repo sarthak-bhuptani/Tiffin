@@ -246,10 +246,17 @@ const CustomerDetail = () => {
           <span className="text-base font-bold text-emerald-800">₹{stats.totalPaid}</span>
         </div>
 
-        <div className="bg-rose-50 rounded-2xl p-3 border border-rose-200 text-center">
-          <span className="text-[10px] font-bold uppercase text-rose-600 block">{t('totalPending')}</span>
-          <span className="text-base font-bold text-rose-800">₹{stats.totalPending}</span>
-        </div>
+        {stats.advanceBalance > 0 ? (
+          <div className="bg-emerald-100/90 rounded-2xl p-3 border border-emerald-300 text-center shadow-xs">
+            <span className="text-[10px] font-extrabold uppercase text-emerald-800 block">🟢 એડવાન્સ જમા</span>
+            <span className="text-base font-extrabold text-emerald-900">+₹{stats.advanceBalance}</span>
+          </div>
+        ) : (
+          <div className="bg-rose-50 rounded-2xl p-3 border border-rose-200 text-center">
+            <span className="text-[10px] font-bold uppercase text-rose-600 block">{t('totalPending')}</span>
+            <span className="text-base font-bold text-rose-800">₹{stats.totalPending}</span>
+          </div>
+        )}
       </div>
 
       {/* 31-Day Visual Tiffin Attendance Calendar */}

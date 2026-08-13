@@ -63,6 +63,7 @@ const getCustomerById = async (id) => {
   });
 
   const totalPending = Math.max(0, totalBilled - totalPaid);
+  const advanceBalance = Math.max(0, totalPaid - totalBilled);
 
   return {
     customer,
@@ -73,6 +74,7 @@ const getCustomerById = async (id) => {
       totalBilled,
       totalPaid,
       totalPending,
+      advanceBalance,
     },
     tiffins,
     payments,

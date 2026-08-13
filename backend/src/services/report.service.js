@@ -170,6 +170,7 @@ const getMonthlyReport = async (year, month) => {
 
   Object.values(customerMap).forEach((c) => {
     c.totalPending = Math.max(0, c.totalBilled - c.totalPaid);
+    c.advanceBalance = Math.max(0, c.totalPaid - c.totalBilled);
   });
 
   return {
