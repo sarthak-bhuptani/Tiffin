@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Modal from './Modal';
-import { Printer, Share2, Download, Upload, Image as ImageIcon } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Printer, Share2, Upload } from 'lucide-react';
 
 const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
+  const { t, language } = useLanguage();
   const [upiId, setUpiId] = useState('9913408222@upi');
   const [customQrImg, setCustomQrImg] = useState(() => {
     return localStorage.getItem('tiffin_custom_qr_code') || '';
@@ -23,13 +25,15 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
 
   if (!customer || !stats) return null;
 
-  const todayStr = new Date().toLocaleDateString('gu-IN', {
+  const isGu = language === 'gu';
+
+  const todayStr = new Date().toLocaleDateString(isGu ? 'gu-IN' : 'en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
 
-  const monthStr = new Date().toLocaleDateString('gu-IN', {
+  const monthStr = new Date().toLocaleDateString(isGu ? 'gu-IN' : 'en-US', {
     month: 'long',
     year: 'numeric',
   });
@@ -39,18 +43,29 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
   };
 
   const handleSendWhatsAppInvoice = () => {
-    const text =
-      `નમસ્તે ${customer.name} જી! 🙏\n\n` +
-      `આ આપનું મહિનાનું રસીદ બિલ છે (${monthStr}):\n` +
-      `-----------------------------\n` +
-      `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
-      `💵 દર: *₹${customer.defaultPrice}/ટિફિન*\n` +
-      `💰 કુલ રકમ: *₹${stats.totalBilled}*\n` +
-      `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
-      `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n` +
-      `-----------------------------\n` +
-      `📱 GPay / PhonePe UPI ID: *${upiId}*\n\n` +
-      `ધન્યવાદ! 🍱✨`;
+    const text = isGu
+      ? `નમસ્તે ${customer.name} જી! 🙏\n\n` +
+        `આ આપનું માસિક રસીદ બિલ છે (${monthStr}):\n` +
+        `-----------------------------\n` +
+        `🍱 આપેલ ટિફિન: *${stats.deliveredCount} નંગ*\n` +
+        `💵 દર: *₹${customer.defaultPrice}/ટિફિન*\n` +
+        `💰 કુલ રકમ: *₹${stats.totalBilled}*\n` +
+        `✅ જમા કરેલ રકમ: *₹${stats.totalPaid}*\n` +
+        `🔴 બાકી નીકળતી રકમ: *₹${stats.totalPending}*\n` +
+        `-----------------------------\n` +
+        `📱 GPay / PhonePe UPI ID: *${upiId}*\n\n` +
+        `ધન્યવાદ! 🍱✨`
+      : `Hello ${customer.name} Ji! 🙏\n\n` +
+        `Monthly Invoice Bill for ${monthStr}:\n` +
+        `-----------------------------\n` +
+        `🍱 Tiffins Delivered: *${stats.deliveredCount} pcs*\n` +
+        `💵 Rate: *₹${customer.defaultPrice}/tiffin*\n` +
+        `💰 Total Billed: *₹${stats.totalBilled}*\n` +
+        `✅ Amount Paid: *₹${stats.totalPaid}*\n` +
+        `🔴 Pending Dues: *₹${stats.totalPending}*\n` +
+        `-----------------------------\n` +
+        `📱 GPay / PhonePe UPI ID: *${upiId}*\n\n` +
+        `Thank you! 🍱✨`;
 
     const rawPhone = customer.phone || '';
     const cleanPhone = rawPhone.replace(/\D/g, '');
@@ -71,7 +86,11 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
   const finalQrImg = customQrImg || generatedQrCodeImg;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="🧾 ડિજિટલ માસિક બિલ (Invoice Receipt)">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isGu ? '🧾 ડિજિટલ માસિક બિલ (Invoice Receipt)' : '🧾 Monthly Digital Invoice Receipt'}
+    >
       <div className="space-y-4 font-sans">
         {/* Printable Receipt Card */}
         <div id="printable-invoice" className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
@@ -79,12 +98,16 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-base font-extrabold text-orange-600 uppercase tracking-wide">
-                🍱 શ્રીનાથજી ટિફિન સર્વિસ
+                🍱 {t('businessName') || "Mom's Special Tiffin Service"}
               </h3>
-              <p className="text-[11px] text-slate-500 font-medium">ઘર જેવું ચોખ્ખું અને સ્વાદિષ્ટ ભોજન</p>
+              <p className="text-[11px] text-slate-500 font-medium">
+                {t('appSubtitle') || 'Hygienic & Delicious Home Cooked Meals'}
+              </p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-bold uppercase text-slate-400 block">તારીખ</span>
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                {isGu ? 'તારીખ' : 'Date'}
+              </span>
               <span className="text-xs font-bold text-slate-700">{todayStr}</span>
             </div>
           </div>
@@ -92,12 +115,16 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
           {/* Customer Info */}
           <div className="bg-orange-50/60 rounded-2xl p-3 border border-orange-100 flex items-center justify-between text-xs">
             <div>
-              <span className="text-[10px] font-bold text-orange-800 uppercase block">ગ્રાહકનું નામ</span>
+              <span className="text-[10px] font-bold text-orange-800 uppercase block">
+                {isGu ? 'ગ્રાહકનું નામ' : 'Customer Name'}
+              </span>
               <h4 className="font-extrabold text-slate-900 text-sm">{customer.name}</h4>
               <p className="text-slate-500 font-medium mt-0.5">{customer.area} • {customer.phone || 'No phone'}</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-bold text-orange-800 uppercase block">મહિનો</span>
+              <span className="text-[10px] font-bold text-orange-800 uppercase block">
+                {isGu ? 'મહિનો' : 'Month'}
+              </span>
               <span className="font-extrabold text-slate-800">{monthStr}</span>
             </div>
           </div>
@@ -105,23 +132,23 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
           {/* Breakdown Table */}
           <div className="border border-slate-100 rounded-2xl overflow-hidden text-xs">
             <div className="bg-slate-100/80 px-3 py-2 grid grid-cols-3 font-extrabold text-slate-700 text-[11px]">
-              <span>વિગત</span>
-              <span className="text-center">ટિફિન નંગ</span>
-              <span className="text-right">રકમ</span>
+              <span>{isGu ? 'વિગત' : 'Particulars'}</span>
+              <span className="text-center">{isGu ? 'ટિફિન નંગ' : 'Tiffins'}</span>
+              <span className="text-right">{isGu ? 'રકમ' : 'Amount'}</span>
             </div>
 
             <div className="p-3 space-y-2">
               <div className="grid grid-cols-3 items-center">
                 <div>
-                  <span className="font-bold text-slate-800 block">ટિફિન હિસાબ</span>
-                  <span className="text-[10px] text-slate-500">₹{customer.defaultPrice} / ટિફિન</span>
+                  <span className="font-bold text-slate-800 block">{isGu ? 'ટિફિન હિસાબ' : 'Tiffin Bill'}</span>
+                  <span className="text-[10px] text-slate-500">₹{customer.defaultPrice} / {isGu ? 'ટિફિન' : 'tiffin'}</span>
                 </div>
                 <span className="text-center font-semibold text-slate-700">{stats.deliveredCount}</span>
                 <span className="text-right font-bold text-slate-900">₹{stats.totalBilled}</span>
               </div>
 
               <div className="grid grid-cols-3 items-center pt-2 text-rose-600 border-t border-slate-50">
-                <span className="font-medium">કેન્સલ / બંધ ટિફિન</span>
+                <span className="font-medium">{isGu ? 'કેન્સલ / બંધ ટિફિન' : 'Skipped Tiffins'}</span>
                 <span className="text-center font-semibold">{stats.skippedCount}</span>
                 <span className="text-right font-bold">₹0</span>
               </div>
@@ -130,18 +157,28 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
             {/* Total Row */}
             <div className="bg-orange-50/80 p-3 grid grid-cols-2 items-center border-t border-orange-100 text-xs">
               <div>
-                <span className="font-bold text-slate-700 block">કુલ હિસાબ (Total Billed):</span>
-                <span className="text-emerald-700 font-semibold">જમા કરેલ રકમ (Paid): ₹{stats.totalPaid}</span>
+                <span className="font-bold text-slate-700 block">
+                  {isGu ? 'કુલ હિસાબ:' : 'Total Billed:'}
+                </span>
+                <span className="text-emerald-700 font-semibold">
+                  {isGu ? 'જમા કરેલ રકમ: ' : 'Total Paid: '}₹{stats.totalPaid}
+                </span>
               </div>
               <div className="text-right">
                 {stats.totalPaid > stats.totalBilled ? (
                   <>
-                    <span className="text-[10px] font-extrabold text-emerald-700 uppercase block">🟢 એડવાન્સ જમા (Advance)</span>
-                    <span className="text-lg font-extrabold text-emerald-800">+₹{stats.totalPaid - stats.totalBilled}</span>
+                    <span className="text-[10px] font-extrabold text-emerald-700 uppercase block">
+                      {isGu ? '🟢 એડવાન્સ જમા' : '🟢 Advance Credit'}
+                    </span>
+                    <span className="text-lg font-extrabold text-emerald-800">
+                      +₹{stats.totalPaid - stats.totalBilled}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <span className="text-[10px] font-bold text-rose-600 uppercase block">બાકી નીકળતી રકમ (Pending)</span>
+                    <span className="text-[10px] font-bold text-rose-600 uppercase block">
+                      {isGu ? 'બાકી નીકળતી રકમ' : 'Pending Dues'}
+                    </span>
                     <span className="text-lg font-extrabold text-rose-700">₹{stats.totalPending}</span>
                   </>
                 )}
@@ -152,14 +189,18 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
           {/* UPI Scan QR Code Section */}
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-3.5 border border-emerald-200 flex items-center justify-between gap-3">
             <div className="space-y-1">
-              <span className="text-[11px] font-extrabold text-emerald-800 block">📲 GPay / PhonePe સ્કેનર</span>
+              <span className="text-[11px] font-extrabold text-emerald-800 block">
+                📲 {isGu ? 'GPay / PhonePe સ્કેનર' : 'GPay / PhonePe QR Scanner'}
+              </span>
               <p className="text-[10px] text-emerald-700 font-semibold">UPI ID: {upiId}</p>
-              <p className="text-[10px] text-slate-500">સ્કેનર વડે સીધું પેમેન્ટ કરી શકો છો.</p>
+              <p className="text-[10px] text-slate-500">
+                {isGu ? 'સ્કેનર વડે સીધું પેમેન્ટ કરી શકો છો.' : 'Scan to pay directly.'}
+              </p>
 
               {/* Upload Custom QR Standee Button */}
               <label className="inline-flex items-center space-x-1 mt-1 text-[10px] font-bold text-emerald-700 bg-white px-2 py-1 rounded-lg border border-emerald-300 cursor-pointer hover:bg-emerald-100 transition shadow-xs">
                 <Upload className="w-3 h-3" />
-                <span>📷 તમારો QR સ્કેનર ફોટો અપલોડ કરો</span>
+                <span>{isGu ? '📷 QR સ્કેનર ફોટો અપલોડ કરો' : '📷 Upload QR Scanner Photo'}</span>
                 <input type="file" accept="image/*" onChange={handleQrUpload} className="hidden" />
               </label>
             </div>
@@ -171,7 +212,9 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
 
           {/* Footer Note */}
           <p className="text-[10px] text-slate-400 text-center italic">
-            આપના સાથ સહકાર બદલ ધન્યવાદ! 🙏 (Thank you for your business!)
+            {isGu
+              ? 'આપના સાથ સહકાર બદલ ધન્યવાદ! 🙏 (Thank you for your business!)'
+              : 'Thank you for your business! 🙏'}
           </p>
         </div>
 
@@ -183,7 +226,7 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
             className="py-3 px-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-xs transition active:scale-98"
           >
             <Printer className="w-4 h-4" />
-            <span>પ્રિન્ટ / PDF ડાઉનલોડ</span>
+            <span>{isGu ? 'પ્રિન્ટ / PDF ડાઉનલોડ' : 'Print / Download PDF'}</span>
           </button>
 
           <button
@@ -192,7 +235,7 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
             className="py-3 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-600/30 transition active:scale-98"
           >
             <Share2 className="w-4 h-4" />
-            <span>WhatsApp પર મોકલો</span>
+            <span>{isGu ? 'WhatsApp પર મોકલો' : 'Send on WhatsApp'}</span>
           </button>
         </div>
       </div>

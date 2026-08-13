@@ -1,6 +1,7 @@
 {
-  "appName": "Tiffin Manager",
-  "appSubtitle": "Home Tiffin Service",
+  "appName": "Mom's Special Tiffin Service",
+  "businessName": "Mom's Special Tiffin Service",
+  "appSubtitle": "Hygienic & Delicious Home Cooked Meals",
   "dashboard": "Dashboard",
   "todaysSummary": "Today's Summary",
   "tiffins": "Tiffins",
