@@ -3,13 +3,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { Utensils, Globe, Sparkles } from 'lucide-react';
 
 const Navbar = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { lang, toggleLang, t } = useLanguage();
 
-  const toggleLang = () => {
-    setLanguage(language === 'gu' ? 'en' : 'gu');
-  };
+  const isGu = lang === 'gu';
 
-  const todayDisplayStr = new Date().toLocaleDateString(language === 'gu' ? 'gu-IN' : 'en-IN', {
+  const todayDisplayStr = new Date().toLocaleDateString(isGu ? 'gu-IN' : 'en-IN', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -46,7 +44,7 @@ const Navbar = () => {
           title="Switch Language"
         >
           <Globe className="w-3.5 h-3.5 text-orange-600" />
-          <span>{language === 'gu' ? '🇬🇧 English' : '🇮🇳 ગુજરાતી'}</span>
+          <span>{isGu ? '🇬🇧 English' : '🇮🇳 ગુજરાતી'}</span>
         </button>
       </div>
     </header>
