@@ -130,13 +130,20 @@ const createBulkTiffins = async (date, entries, deletedIds = []) => {
   };
 };
 
+const mongoose = require('mongoose');
+
 const getTiffins = async (query = {}) => {
   const filter = {};
 
   if (query.date) {
     filter.date = query.date;
   }
-  if (query.customerId) {
+  if (
+    query.customerId &&
+    query.customerId !== 'null' &&
+    query.customerId !== 'undefined' &&
+    mongoose.Types.ObjectId.isValid(query.customerId)
+  ) {
     filter.customerId = query.customerId;
   }
   if (query.paymentStatus) {
