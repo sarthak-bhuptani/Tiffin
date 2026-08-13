@@ -22,7 +22,7 @@ import {
   Calendar,
   Volume2,
   VolumeX,
-  Sparkles,
+  Sun,
   ChevronRight,
 } from 'lucide-react';
 
