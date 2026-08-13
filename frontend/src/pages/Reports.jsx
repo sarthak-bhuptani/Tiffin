@@ -46,7 +46,7 @@ const Reports = () => {
   }, [year, month]);
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4">
+    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4 font-sans notranslate" translate="no">
       {/* Confirm Reset Popup */}
       <ConfirmModal
         isOpen={isResetModalOpen}
@@ -57,17 +57,17 @@ const Reports = () => {
       />
 
       {/* Header Bar */}
-      <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-orange-100 shadow-xs">
+      <div className="flex items-center justify-between bg-white rounded-3xl p-4 border border-emerald-100 shadow-xs">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">{t('reports')}</h2>
-          <p className="text-xs text-slate-500">{t('thisMonth')} {t('netProfit')}</p>
+          <h2 className="text-xl font-extrabold text-slate-900">{t('reports')}</h2>
+          <p className="text-xs text-emerald-700 font-semibold">{t('thisMonth')} {t('netProfit')}</p>
         </div>
 
         <div className="flex items-center space-x-2">
           {/* Reset All Report Data Button */}
           <button
             onClick={() => setIsResetModalOpen(true)}
-            className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition"
+            className="flex items-center space-x-1 px-3 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition"
             title="તમામ ડેટા ડિલીટ કરો"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -75,7 +75,7 @@ const Reports = () => {
           </button>
 
           {/* Month Selector */}
-          <div className="flex items-center space-x-1 bg-orange-50 px-2 py-1.5 rounded-xl border border-orange-200">
+          <div className="flex items-center space-x-1 bg-emerald-50 px-2 py-1.5 rounded-2xl border border-emerald-200">
             <select
               value={month}
               onChange={(e) => setMonth(parseInt(e.target.value, 10))}

@@ -22,10 +22,13 @@ import {
   Calendar,
   Volume2,
   VolumeX,
+  MessageCircle,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const [selectedDate, setSelectedDate] = useState(() => getLocalTodayStr());
@@ -60,7 +63,6 @@ const Dashboard = () => {
     fetchDashboard(selectedDate);
   }, [selectedDate]);
 
-  // Clean up speech synthesis when component unmounts
   useEffect(() => {
     return () => {
       if ('speechSynthesis' in window) {
@@ -124,16 +126,18 @@ const Dashboard = () => {
     }
   };
 
+  const isGu = language === 'gu';
+
   return (
-    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-5">
+    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-5 font-sans notranslate" translate="no">
       {/* 📲 PWA 1-Tap Mobile App Installer Banner */}
       <PwaInstallPrompt />
 
       {/* Notification Toast */}
       {toastMessage && (
-        <div className="p-3 rounded-2xl bg-emerald-600 text-white font-medium text-xs flex items-center justify-between shadow-lg animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-between shadow-lg animate-in fade-in">
           <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{toastMessage}</span>
           </div>
           <button onClick={() => setToastMessage('')} className="text-white/80 hover:text-white font-bold">
@@ -142,37 +146,47 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Interactive Title Banner with Date Selector & Gujarati Audio Assistant */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-orange-600/20 flex-wrap gap-3">
-        <div>
-          <span className="text-xs uppercase tracking-wider text-orange-100 font-semibold">{t('todaysSummary')}</span>
-          <div className="flex items-center space-x-2 mt-1">
-            <Calendar className="w-5 h-5 text-amber-200" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-white/20 text-white font-bold text-lg rounded-xl px-2.5 py-1 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
-            />
+      {/* Hero Header Banner */}
+      <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-emerald-700/20 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div className="flex items-center space-x-1.5">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-100">
+                {t('businessName') || "Mom's Special Tiffin Service"}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 mt-1">
+              <Calendar className="w-5 h-5 text-amber-200 shrink-0" />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-white/20 text-white font-extrabold text-base rounded-xl px-2.5 py-1 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
+              />
+            </div>
           </div>
-          <p className="text-xs text-orange-100 mt-2">
-            {t('activeCustomers')}: <span className="font-bold text-white">{data?.activeCustomersCount || 0}</span>
-          </p>
+
+          {/* 🔊 Gujarati Voice Audio Summary Speaker Button */}
+          <button
+            type="button"
+            onClick={handleSpeakSummary}
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-2xl font-extrabold text-xs shadow-md transition active:scale-95 ${
+              isSpeaking
+                ? 'bg-rose-500 text-white animate-pulse'
+                : 'bg-white/20 hover:bg-white/30 text-white border border-white/30'
+            }`}
+            title="આવાજથી હિસાબ સાંભળો"
+          >
+            {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-200" />}
+            <span>{isSpeaking ? 'બંધ કરો' : '🔊 હિસાબ સાંભળો'}</span>
+          </button>
         </div>
 
-        {/* 🔊 Gujarati Voice Audio Summary Speaker Button */}
-        <button
-          onClick={handleSpeakSummary}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-md transition active:scale-95 ${
-            isSpeaking
-              ? 'bg-rose-500 text-white animate-pulse'
-              : 'bg-white/20 hover:bg-white/30 text-white border border-white/30'
-          }`}
-          title="આવાજથી હિસાબ સાંભળો"
-        >
-          {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-200" />}
-          <span>{isSpeaking ? 'બંધ કરો (Stop)' : '🔊 હિસાબ સાંભળો'}</span>
-        </button>
+        <div className="pt-1 border-t border-white/20 flex items-center justify-between text-xs text-emerald-100">
+          <span>{t('activeCustomers')}: <strong className="text-white font-extrabold">{data?.activeCustomersCount || 0} ગ્રાહકો</strong></span>
+          <span>આજના આપેલ: <strong className="text-amber-200 font-extrabold">{data?.deliveredCount || 0} ટિફિન</strong></span>
+        </div>
       </div>
 
       {loading ? (
@@ -183,14 +197,111 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          {/* Key Metric Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {/* 🌟 3 Big Action Cards for Mother */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 px-1">
+              {isGu ? 'મુખ્ય કામગીરી (Daily Action Cards)' : 'Primary Action Cards'}
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Card 1: Daily Entry */}
+              <button
+                type="button"
+                onClick={() => navigate('/tiffins/quick')}
+                className="p-4 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                    🍱
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm leading-tight">
+                      {isGu ? '1. આજની ટિફિન હાજરી' : '1. Today\'s Attendance'}
+                    </h4>
+                    <p className="text-[11px] text-emerald-100 font-semibold mt-0.5">
+                      {isGu ? 'આજના ટિફિન આપ્યા / રજા નોંધો' : 'Log delivered vs skipped tiffins'}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-emerald-200 shrink-0" />
+              </button>
+
+              {/* Card 2: View Today's List */}
+              <button
+                type="button"
+                onClick={() => navigate('/tiffins/list')}
+                className="p-4 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                    📋
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm leading-tight">
+                      {isGu ? '2. આજનું લિસ્ટ જુઓ' : "2. View Today's List"}
+                    </h4>
+                    <p className="text-[11px] text-blue-100 font-semibold mt-0.5">
+                      {data.deliveredCount} {isGu ? 'આપ્યા' : 'delivered'} • {data.skippedCount} {isGu ? 'રજા' : 'skipped'}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-blue-200 shrink-0" />
+              </button>
+
+              {/* Card 3: Pending Dues & WhatsApp */}
+              <button
+                type="button"
+                onClick={() => navigate('/accounts')}
+                className="p-4 rounded-3xl bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-md shadow-rose-600/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                    🔴
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm leading-tight">
+                      {isGu ? '3. બાકી પૈસા ઉઘરાણી' : '3. Pending Dues & WhatsApp'}
+                    </h4>
+                    <p className="text-[11px] text-rose-100 font-semibold mt-0.5">
+                      ₹{data.pendingPaymentsTotal} {isGu ? 'બાકી • 1-Tap WhatsApp બિલ' : 'pending'}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-rose-200 shrink-0" />
+              </button>
+
+              {/* Card 4: Record Payment */}
+              <button
+                type="button"
+                onClick={() => navigate('/accounts')}
+                className="p-4 rounded-3xl bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20 flex items-center justify-between transition active:scale-98 text-left hover:brightness-105"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                    🟢
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm leading-tight">
+                      {isGu ? '4. રોકડા / UPI પૈસા જમા કરો' : '4. Record Payment'}
+                    </h4>
+                    <p className="text-[11px] text-amber-100 font-semibold mt-0.5">
+                      {isGu ? 'ગ્રાહકના પૈસા ખાતામાં ઉમેરો' : 'Add cash/UPI payments'}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-amber-200 shrink-0" />
+              </button>
+            </div>
+          </div>
+
+          {/* Key Metric Stat Cards */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 pt-2">
             <StatCard
               title={t('tiffins')}
               value={data.todayTiffins}
               subtext={`${t('delivered')}: ${data.deliveredCount} | ${t('skipped')}: ${data.skippedCount}`}
               icon={Utensils}
-              color="orange"
+              color="emerald"
               onClick={() => navigate('/tiffins/list')}
             />
 
@@ -224,7 +335,7 @@ const Dashboard = () => {
               value={`₹${data.pendingPaymentsTotal}`}
               subtext={t('pendingPayments')}
               icon={AlertCircle}
-              color="blue"
+              color="rose"
               onClick={() => navigate('/accounts')}
             />
 
@@ -233,58 +344,28 @@ const Dashboard = () => {
               value={data.activeCustomersCount}
               subtext={t('customers')}
               icon={Users}
-              color="orange"
+              color="emerald"
               onClick={() => navigate('/customers')}
             />
           </div>
 
-          {/* Big Mobile Action Buttons */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 px-1">Quick Actions</h3>
+          {/* Secondary Quick Action Buttons */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              onClick={() => setIsExpenseModalOpen(true)}
+              className="py-3 px-3 rounded-2xl bg-white border border-slate-200 hover:border-rose-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
+            >
+              <Plus className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>+ {t('addExpense')}</span>
+            </button>
 
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => navigate('/tiffins/quick')}
-                className="py-4 px-4 rounded-2xl bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-sm shadow-md shadow-orange-600/30 flex items-center justify-center space-x-2 transition"
-              >
-                <Plus className="w-5 h-5" />
-                <span>+ {t('addTiffin')}</span>
-              </button>
-
-              <button
-                onClick={() => setIsExpenseModalOpen(true)}
-                className="py-4 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-sm shadow-md shadow-rose-600/30 flex items-center justify-center space-x-2 transition"
-              >
-                <Plus className="w-5 h-5" />
-                <span>+ {t('addExpense')}</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => navigate('/tiffins/list')}
-                className="py-3 px-2 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold text-xs flex flex-col items-center justify-center space-y-1 shadow-xs hover:border-orange-300 transition"
-              >
-                <BookOpen className="w-4 h-4 text-orange-600" />
-                <span className="truncate w-full text-center">{t('viewTodaysList')}</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/accounts')}
-                className="py-3 px-2 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold text-xs flex flex-col items-center justify-center space-y-1 shadow-xs hover:border-orange-300 transition"
-              >
-                <Wallet className="w-4 h-4 text-blue-600" />
-                <span className="truncate w-full text-center">{t('payments')}</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/customers')}
-                className="py-3 px-2 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold text-xs flex flex-col items-center justify-center space-y-1 shadow-xs hover:border-orange-300 transition"
-              >
-                <Users className="w-4 h-4 text-emerald-600" />
-                <span className="truncate w-full text-center">{t('customers')}</span>
-              </button>
-            </div>
+            <button
+              onClick={() => navigate('/customers')}
+              className="py-3 px-3 rounded-2xl bg-white border border-slate-200 hover:border-emerald-300 text-slate-800 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-xs transition active:scale-95"
+            >
+              <Users className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>+ {t('addNewCustomer')}</span>
+            </button>
           </div>
         </>
       )}

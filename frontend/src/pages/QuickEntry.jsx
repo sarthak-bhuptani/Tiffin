@@ -452,29 +452,29 @@ const QuickEntry = () => {
   );
 
   return (
-    <div className="pb-44 pt-3 px-3 sm:px-4 max-w-4xl mx-auto space-y-3.5">
+    <div className="pb-44 pt-3 px-3 sm:px-4 max-w-4xl mx-auto space-y-3.5 font-sans notranslate" translate="no">
       <Toast message={toastMessage} onClose={() => setToastMessage('')} />
 
       {/* Header */}
-      <div className="flex items-center justify-between bg-white rounded-2xl p-3 sm:p-4 border border-orange-100 shadow-xs">
+      <div className="flex items-center justify-between bg-white rounded-3xl p-4 border border-emerald-100 shadow-xs">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 leading-tight">{t('digitalNotebook')}</h2>
-            <p className="text-xs text-slate-500">{t('quickEntry')}</p>
+            <h2 className="text-base font-extrabold text-slate-900 leading-tight">{t('digitalNotebook')}</h2>
+            <p className="text-xs text-emerald-700 font-semibold">{t('quickEntry')}</p>
           </div>
         </div>
 
         {/* Date Selector */}
-        <div className="flex items-center space-x-1.5 bg-orange-50 px-3 py-2 rounded-xl border border-orange-200 shadow-xs">
-          <Calendar className="w-4 h-4 text-orange-600" />
+        <div className="flex items-center space-x-1.5 bg-emerald-50 px-3 py-2 rounded-2xl border border-emerald-200 shadow-xs">
+          <Calendar className="w-4 h-4 text-emerald-700" />
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
+            className="bg-transparent text-xs font-extrabold text-slate-900 focus:outline-none cursor-pointer"
           />
         </div>
       </div>
@@ -483,8 +483,8 @@ const QuickEntry = () => {
       <div className="flex items-center bg-slate-200/80 p-1 rounded-2xl">
         <button
           onClick={() => setActiveTab('tiffins')}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 ${
-            activeTab === 'tiffins' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+          className={`flex-1 py-2.5 text-xs font-extrabold rounded-xl transition flex items-center justify-center space-x-1.5 ${
+            activeTab === 'tiffins' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -493,8 +493,8 @@ const QuickEntry = () => {
 
         <button
           onClick={() => setActiveTab('ledger')}
-          className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 ${
-            activeTab === 'ledger' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+          className={`flex-1 py-2.5 text-xs font-extrabold rounded-xl transition flex items-center justify-center space-x-1.5 ${
+            activeTab === 'ledger' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <Receipt className="w-4 h-4" />
@@ -506,7 +506,7 @@ const QuickEntry = () => {
       <div className="grid grid-cols-2 sm:flex items-center justify-between gap-2">
         <button
           onClick={() => setIsScanModalOpen(true)}
-          className="col-span-2 sm:col-span-1 sm:flex-1 flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition active:scale-98"
+          className="col-span-2 sm:col-span-1 sm:flex-1 flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white font-extrabold text-xs shadow-md shadow-emerald-700/20 transition active:scale-98"
         >
           <Camera className="w-4 h-4 shrink-0" />
           <span className="truncate">📸 {t('scanNotebook')}</span>
@@ -517,7 +517,7 @@ const QuickEntry = () => {
             setActiveEntryIndex(entries.length);
             setIsSearchOpen(true);
           }}
-          className="flex-1 flex items-center justify-center space-x-1 px-2.5 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs border border-orange-200 transition"
+          className="flex-1 flex items-center justify-center space-x-1 px-2.5 py-2.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs border border-emerald-200 transition"
         >
           <Search className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">{t('searchCustomer')}</span>

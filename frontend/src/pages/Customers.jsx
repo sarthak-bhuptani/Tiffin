@@ -149,13 +149,13 @@ const Customers = () => {
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">{t('regularCustomers')}</h2>
-          <p className="text-xs text-slate-500">{customers.length} {t('customers')}</p>
+          <h2 className="text-xl font-extrabold text-slate-900">{t('regularCustomers')}</h2>
+          <p className="text-xs text-emerald-700 font-semibold">{customers.length} {t('customers')}</p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/30 transition active:scale-98"
+          className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs shadow-md shadow-emerald-600/30 transition active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>+ {t('addNewCustomer')}</span>
@@ -163,32 +163,32 @@ const Customers = () => {
       </div>
 
       {/* Search & Tabs */}
-      <div className="bg-white rounded-2xl p-3 border border-orange-100 shadow-xs space-y-2">
+      <div className="bg-white rounded-3xl p-3.5 border border-emerald-100 shadow-xs space-y-2.5">
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
             placeholder={t('searchCustomer')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchCustomersList()}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="w-full pl-9 pr-3 py-2.5 text-xs font-bold rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
-        <div className="flex items-center space-x-2 pt-1 text-xs font-bold">
+        <div className="flex items-center space-x-2 pt-0.5 text-xs font-extrabold">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              activeTab === 'all' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600'
+            className={`px-3.5 py-1.5 rounded-xl transition ${
+              activeTab === 'all' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600'
             }`}
           >
             All
           </button>
           <button
             onClick={() => setActiveTab('active')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              activeTab === 'active' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600'
+            className={`px-3.5 py-1.5 rounded-xl transition ${
+              activeTab === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600'
             }`}
           >
             {t('active')}

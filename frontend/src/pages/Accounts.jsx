@@ -189,7 +189,7 @@ const Accounts = () => {
   );
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4 font-sans">
+    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4 font-sans notranslate" translate="no">
       <Toast message={toastMessage} onClose={() => setToastMessage('')} />
 
       {/* Delete Confirm Modal */}
@@ -202,30 +202,30 @@ const Accounts = () => {
       />
 
       {/* 3-Tab Navigator */}
-      <div className="flex items-center justify-between bg-white rounded-2xl p-1.5 border border-orange-100 shadow-xs gap-1">
+      <div className="flex items-center justify-between bg-white/90 backdrop-blur-md rounded-3xl p-1.5 border border-emerald-100 shadow-xs gap-1">
         <button
           onClick={() => setActiveTab('dues')}
-          className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center space-x-1 transition ${
+          className={`flex-1 py-2.5 rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-1 transition active:scale-95 ${
             activeTab === 'dues' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <AlertCircle className="w-4 h-4" />
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>🔴 બાકી હિસાબ ({duesList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('payments')}
-          className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center space-x-1 transition ${
+          className={`flex-1 py-2.5 rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-1 transition active:scale-95 ${
             activeTab === 'payments' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Wallet className="w-4 h-4" />
+          <Wallet className="w-4 h-4 shrink-0" />
           <span>🟢 જમા રકમ</span>
         </button>
 
         <button
           onClick={() => setActiveTab('expenses')}
-          className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center space-x-1 transition ${
+          className={`flex-1 py-2.5 rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-1 transition active:scale-95 ${
             activeTab === 'expenses' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >

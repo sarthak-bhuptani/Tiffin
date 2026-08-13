@@ -4,28 +4,57 @@
 
 @layer base {
   body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
 }
 
-/* Custom scrollbars for mobile notebooks */
+/* Glassmorphism & UI Utilities */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-card-emerald {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.9) 0%, rgba(209, 250, 229, 0.7) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 243, 208, 0.8);
+}
+
+.glass-card-amber {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.7) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(252, 211, 77, 0.8);
+}
+
+.ambient-shadow {
+  box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.12);
+}
+
+.ambient-shadow-orange {
+  box-shadow: 0 10px 30px -10px rgba(249, 115, 22, 0.15);
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fff7ed;
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #fdba74;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #f97316;
+  background: #94a3b8;
 }
 
 /* Printable Invoice CSS Rules */

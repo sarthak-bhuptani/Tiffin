@@ -15,7 +15,7 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-orange-100 px-2 py-1.5 shadow-lg max-w-4xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-emerald-100/90 px-2 py-2 shadow-2xl max-w-4xl mx-auto notranslate" translate="no">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -25,13 +25,15 @@ const MobileBottomNav = () => {
               to={item.to}
               end={item.to === '/'}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center py-1 px-1 flex-1 min-w-0 rounded-xl transition ${
-                  isActive ? 'text-orange-600 bg-orange-50 font-bold' : 'text-slate-500 hover:text-slate-800'
+                `flex flex-col items-center justify-center py-1.5 px-2 flex-1 min-w-0 rounded-2xl transition-all duration-200 ${
+                  isActive
+                    ? 'text-emerald-700 bg-emerald-100/80 font-extrabold shadow-xs scale-105'
+                    : 'text-slate-500 hover:text-slate-800 font-medium'
                 }`
               }
             >
-              <Icon className="w-5 h-5 mb-0.5" />
-              <span className="text-[11px] leading-tight text-center truncate w-full">{item.label}</span>
+              <Icon className="w-5 h-5 mb-0.5 shrink-0" />
+              <span className="text-[10px] leading-tight text-center truncate w-full">{item.label}</span>
             </NavLink>
           );
         })}

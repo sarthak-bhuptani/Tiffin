@@ -1,11 +1,15 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Utensils, Globe } from 'lucide-react';
+import { Utensils, Globe, Sparkles } from 'lucide-react';
 
 const Navbar = () => {
-  const { lang, toggleLang, t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
-  const todayDisplayStr = new Date().toLocaleDateString(lang === 'gu' ? 'gu-IN' : 'en-IN', {
+  const toggleLang = () => {
+    setLanguage(language === 'gu' ? 'en' : 'gu');
+  };
+
+  const todayDisplayStr = new Date().toLocaleDateString(language === 'gu' ? 'gu-IN' : 'en-IN', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -13,27 +17,36 @@ const Navbar = () => {
   });
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-orange-100 shadow-sm px-4 py-3">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-emerald-100/80 shadow-xs px-4 py-3 notranslate" translate="no">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
-        {/* Logo & App Name */}
-        <div className="flex items-center space-x-2.5">
-          <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-600/30">
+        {/* Logo & App Title */}
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/30">
             <Utensils className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-slate-900 leading-tight">{t('appName')}</h1>
-            <p className="text-xs text-orange-600 font-medium">{todayDisplayStr}</p>
+            <div className="flex items-center space-x-1.5">
+              <h1 className="font-extrabold text-base text-slate-900 leading-tight">
+                {t('businessName') || "Mom's Special Tiffin Service"}
+              </h1>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Live Online"></span>
+            </div>
+            <p className="text-[11px] text-emerald-700 font-semibold flex items-center space-x-1">
+              <Sparkles className="w-3 h-3 text-amber-500 inline shrink-0" />
+              <span>{todayDisplayStr}</span>
+            </p>
           </div>
         </div>
 
-        {/* Language Switcher */}
+        {/* Language Switcher Pill */}
         <button
+          type="button"
           onClick={toggleLang}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium text-xs border border-orange-200/60 transition active:scale-95 shadow-xs"
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200/80 transition active:scale-95 shadow-xs"
           title="Switch Language"
         >
-          <Globe className="w-3.5 h-3.5" />
-          <span>{lang === 'gu' ? 'English' : 'ગુજરાતી'}</span>
+          <Globe className="w-3.5 h-3.5 text-emerald-600" />
+          <span>{language === 'gu' ? '🇬🇧 English' : '🇮🇳 ગુજરાતી'}</span>
         </button>
       </div>
     </header>
