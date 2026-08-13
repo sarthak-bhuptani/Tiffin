@@ -160,10 +160,12 @@ const getTiffins = async (query = {}) => {
     filter.status = query.status;
   }
   if (query.area) {
-    filter.area = new RegExp(query.area, 'i');
+    const safeArea = query.area.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    filter.area = new RegExp(safeArea, 'i');
   }
   if (query.search) {
-    const searchRegex = new RegExp(query.search, 'i');
+    const safeSearch = query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(safeSearch, 'i');
     filter.$or = [{ customerName: searchRegex }, { area: searchRegex }, { notes: searchRegex }];
   }
 

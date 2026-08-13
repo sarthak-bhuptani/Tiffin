@@ -8,16 +8,20 @@ const createCustomer = async (customerData) => {
   return customer;
 };
 
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const getCustomers = async (query = {}) => {
   const filter = {};
   if (query.active !== undefined) {
     filter.active = query.active === 'true' || query.active === true;
   }
   if (query.area) {
-    filter.area = new RegExp(query.area, 'i');
+    const safeArea = escapeRegex(query.area);
+    filter.area = new RegExp(safeArea, 'i');
   }
   if (query.search) {
-    const searchRegex = new RegExp(query.search, 'i');
+    const safeSearch = escapeRegex(query.search);
+    const searchRegex = new RegExp(safeSearch, 'i');
     filter.$or = [{ name: searchRegex }, { area: searchRegex }, { phone: searchRegex }];
   }
 
