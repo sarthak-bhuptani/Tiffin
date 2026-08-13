@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import { useLanguage } from '../context/LanguageContext';
-import { Printer, Share2, Upload } from 'lucide-react';
+import { Printer, Share2, Upload, Download, Loader2 } from 'lucide-react';
 
 const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
   const { t, language } = useLanguage();
   const [upiId, setUpiId] = useState('9913408222@upi');
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [customQrImg, setCustomQrImg] = useState(() => {
     return localStorage.getItem('tiffin_custom_qr_code') || '';
   });
@@ -40,6 +41,33 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('printable-invoice');
+    if (!element) return;
+
+    try {
+      setIsDownloadingPdf(true);
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+
+      const safeName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `Moms_Special_Tiffin_Bill_${safeName}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF download error:', err);
+      window.print();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const handleSendWhatsAppInvoice = () => {
@@ -219,23 +247,37 @@ const InvoiceModal = ({ isOpen, onClose, customer, stats, tiffins = [] }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div className="grid grid-cols-3 gap-1.5 pt-1">
+          <button
+            type="button"
+            disabled={isDownloadingPdf}
+            onClick={handleDownloadPdf}
+            className="py-2.5 px-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center space-x-1 shadow-md shadow-orange-600/30 transition active:scale-95 disabled:opacity-50"
+          >
+            {isDownloadingPdf ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5 shrink-0" />
+            )}
+            <span className="truncate">{isGu ? '📥 PDF' : '📥 Download'}</span>
+          </button>
+
           <button
             type="button"
             onClick={handlePrint}
-            className="py-3 px-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-xs transition active:scale-98"
+            className="py-2.5 px-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1 shadow-xs transition active:scale-95"
           >
-            <Printer className="w-4 h-4" />
-            <span>{isGu ? 'પ્રિન્ટ / PDF ડાઉનલોડ' : 'Print / Download PDF'}</span>
+            <Printer className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{isGu ? '🖨️ પ્રિન્ટ' : '🖨️ Print'}</span>
           </button>
 
           <button
             type="button"
             onClick={handleSendWhatsAppInvoice}
-            className="py-3 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-600/30 transition active:scale-98"
+            className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1 shadow-md shadow-emerald-600/30 transition active:scale-95"
           >
-            <Share2 className="w-4 h-4" />
-            <span>{isGu ? 'WhatsApp પર મોકલો' : 'Send on WhatsApp'}</span>
+            <Share2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{isGu ? '💬 WhatsApp' : '💬 Send'}</span>
           </button>
         </div>
       </div>
