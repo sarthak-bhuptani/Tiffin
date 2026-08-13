@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { getCustomerById, deleteCustomer } from '../services/customerService';
+import { getCustomerById, updateCustomer, deleteCustomer } from '../services/customerService';
 import { recordPayment } from '../services/paymentService';
 import { createRangeTiffins } from '../services/tiffinService';
 import Modal from '../components/Modal';
@@ -20,6 +20,7 @@ import {
   Share2,
   Receipt,
   CalendarRange,
+  Pencil,
 } from 'lucide-react';
 
 const CustomerDetail = () => {
@@ -51,6 +52,21 @@ const CustomerDetail = () => {
   // Delete Confirmation Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  // Edit Customer Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    phone: '',
+    area: '',
+    defaultQuantity: 1,
+    defaultPrice: 60,
+    defaultLunchPrice: 60,
+    defaultDinnerPrice: 80,
+    planType: 'daily',
+    notes: '',
+  });
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   // Multi-Day Range Entry Modal State
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
   const [rangeForm, setRangeForm] = useState({
@@ -75,6 +91,17 @@ const CustomerDetail = () => {
         }));
       }
       if (res.customer) {
+        setEditForm({
+          name: res.customer.name || '',
+          phone: res.customer.phone || '',
+          area: res.customer.area || '',
+          defaultQuantity: res.customer.defaultQuantity || 1,
+          defaultPrice: res.customer.defaultPrice || 60,
+          defaultLunchPrice: res.customer.defaultLunchPrice || res.customer.defaultPrice || 60,
+          defaultDinnerPrice: res.customer.defaultDinnerPrice || 80,
+          planType: res.customer.planType || 'daily',
+          notes: res.customer.notes || '',
+        });
         setRangeForm((prev) => ({
           ...prev,
           quantity: res.customer.defaultQuantity || 1,
@@ -91,6 +118,28 @@ const CustomerDetail = () => {
   useEffect(() => {
     fetchCustomerDetails();
   }, [id]);
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setEditSubmitting(true);
+      await updateCustomer(id, {
+        ...editForm,
+        defaultQuantity: parseFloat(editForm.defaultQuantity),
+        defaultPrice: parseFloat(editForm.defaultPrice),
+        defaultLunchPrice: parseFloat(editForm.defaultLunchPrice),
+        defaultDinnerPrice: parseFloat(editForm.defaultDinnerPrice),
+      });
+
+      setIsEditModalOpen(false);
+      setToastMessage('✅ ગ્રાહકની વિગતો અપડેટ થઈ ગઈ!');
+      fetchCustomerDetails();
+    } catch (err) {
+      alert(err.response?.data?.message || t('errorOccurred'));
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
 
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
@@ -212,7 +261,7 @@ const CustomerDetail = () => {
   const { customer, stats, tiffins } = data;
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4">
+    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-4 font-sans">
       <Toast message={toastMessage} onClose={() => setToastMessage('')} />
 
       {/* Top Navigation Bar */}
@@ -225,13 +274,25 @@ const CustomerDetail = () => {
           <span>પાછા જાઓ (Back)</span>
         </button>
 
-        <button
-          onClick={() => setIsDeleteModalOpen(true)}
-          className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition active:scale-95"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          <span>ડીલીટ કરો</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          {/* Edit Customer Button */}
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs border border-orange-200 transition active:scale-95"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            <span>✏️ વિગતો બદલો (Edit)</span>
+          </button>
+
+          {/* Delete Customer Button */}
+          <button
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition active:scale-95"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>ડીલીટ કરો</span>
+          </button>
+        </div>
       </div>
 
       {/* Customer Header Card */}
@@ -409,6 +470,104 @@ const CustomerDetail = () => {
           </div>
         )}
       </div>
+
+      {/* ✏️ Edit Customer Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="✏️ ગ્રાહકની વિગતો બદલો (Edit Customer)">
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">ગ્રાહકનું નામ (Customer Name)</label>
+            <input
+              type="text"
+              required
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">મોબાઇલ નંબર (Phone)</label>
+              <input
+                type="text"
+                placeholder="e.g. 9876543210"
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">વિસ્તાર (Area)</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Sector 6"
+                value={editForm.area}
+                onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">દૈનિક નંગ (Qty)</label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={editForm.defaultQuantity}
+                onChange={(e) => setEditForm({ ...editForm, defaultQuantity: e.target.value })}
+                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">બપોર ભાવ (Lunch)</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={editForm.defaultLunchPrice}
+                onChange={(e) => setEditForm({ ...editForm, defaultLunchPrice: e.target.value })}
+                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">સાંજ ભાવ (Dinner)</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={editForm.defaultDinnerPrice}
+                onChange={(e) => setEditForm({ ...editForm, defaultDinnerPrice: e.target.value })}
+                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">નોંધ (Notes)</label>
+            <input
+              type="text"
+              placeholder="e.g. Less spicy, extra roti"
+              value={editForm.notes}
+              onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={editSubmitting}
+            className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-md shadow-orange-600/30 transition active:scale-98"
+          >
+            {editSubmitting ? 'અપડેટ થઈ રહ્યું છે...' : '✅ વિગતો સેવ કરો (Save Changes)'}
+          </button>
+        </form>
+      </Modal>
 
       {/* 📅 Multi-Day Range Entry Modal */}
       <Modal isOpen={isRangeModalOpen} onClose={() => setIsRangeModalOpen(false)} title="📅 એકસાથે બહુવિધ દિવસોની એન્ટ્રી (Bulk Date Range)">
