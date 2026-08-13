@@ -332,30 +332,27 @@ const CustomerDetail = () => {
       {/* 31-Day Visual Tiffin Attendance Calendar */}
       <CustomerCalendar
         tiffins={tiffins}
-        defaultPrice={customer.defaultPrice}
-        defaultQuantity={customer.defaultQuantity}
-        onSaveDayEntry={async (dateStr, status, quantity, unitPrice) => {
+        customer={customer}
+        onSaveSingleEntry={async (payload) => {
           try {
-            if (status === 'delete') {
-              const existing = tiffins.find((t) => t.date === dateStr);
-              if (existing) {
-                const { deleteTiffin } = await import('../services/tiffinService');
-                await deleteTiffin(existing._id);
-              }
-            } else {
-              const { createSingleTiffin } = await import('../services/tiffinService');
-              await createSingleTiffin({
-                date: dateStr,
-                customerId: id,
-                customerName: customer.name,
-                area: customer.area,
-                quantity,
-                unitPrice,
-                status,
-                paymentStatus: 'PENDING',
-              });
-            }
-            setToastMessage('✅ તારીખની એન્ટ્રી અપડેટ થઈ ગઈ!');
+            const { createSingleTiffin } = await import('../services/tiffinService');
+            await createSingleTiffin({
+              customerId: id,
+              customerName: customer.name,
+              area: customer.area,
+              ...payload,
+            });
+            setToastMessage('✅ એન્ટ્રી જમા થઈ ગઈ!');
+            fetchCustomerDetails();
+          } catch (err) {
+            alert(err.response?.data?.message || t('errorOccurred'));
+          }
+        }}
+        onDeleteSingleEntry={async (tiffinId) => {
+          try {
+            const { deleteTiffin } = await import('../services/tiffinService');
+            await deleteTiffin(tiffinId);
+            setToastMessage('✅ એન્ટ્રી ડીલીટ થઈ ગઈ!');
             fetchCustomerDetails();
           } catch (err) {
             alert(err.response?.data?.message || t('errorOccurred'));
