@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { getTodayDashboard } from '../services/reportService';
 import StatCard from '../components/StatCard';
 import Modal from '../components/Modal';
+import PwaInstallPrompt from '../components/PwaInstallPrompt';
 import { createExpense } from '../services/expenseService';
 import { getLocalTodayStr } from '../utils/dateUtils';
 
@@ -125,6 +126,9 @@ const Dashboard = () => {
 
   return (
     <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto space-y-5">
+      {/* 📲 PWA 1-Tap Mobile App Installer Banner */}
+      <PwaInstallPrompt />
+
       {/* Notification Toast */}
       {toastMessage && (
         <div className="p-3 rounded-2xl bg-emerald-600 text-white font-medium text-xs flex items-center justify-between shadow-lg animate-in fade-in">
