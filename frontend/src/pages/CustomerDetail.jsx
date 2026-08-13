@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomerById, updateCustomer, deleteCustomer } from '../services/customerService';
 import { recordPayment } from '../services/paymentService';
-import { createRangeTiffins } from '../services/tiffinService';
+import { createRangeTiffins, createSingleTiffin, deleteTiffin } from '../services/tiffinService';
 import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
@@ -398,7 +398,6 @@ const CustomerDetail = () => {
         customer={customer}
         onSaveSingleEntry={async (payload) => {
           try {
-            const { createSingleTiffin } = await import('../services/tiffinService');
             await createSingleTiffin({
               customerId: id,
               customerName: customer.name,
@@ -413,7 +412,6 @@ const CustomerDetail = () => {
         }}
         onDeleteSingleEntry={async (tiffinId) => {
           try {
-            const { deleteTiffin } = await import('../services/tiffinService');
             await deleteTiffin(tiffinId);
             setToastMessage('✅ એન્ટ્રી ડીલીટ થઈ ગઈ!');
             fetchCustomerDetails();
